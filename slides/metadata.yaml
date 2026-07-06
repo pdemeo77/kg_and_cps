@@ -1,0 +1,129 @@
+# ===========================================
+# Quarto Project Configuration
+# PhD Course: KG + CPS in Healthcare
+# ===========================================
+
+project:
+  type: website
+  output-dir: compiled
+  
+  # Render all .qmd files in slides/
+  render:
+    - "*.qmd"
+    - "!*.draft.qmd"
+
+# ===========================================
+# Metadata globale (applicata a tutte le slide)
+# ===========================================
+
+author: "Tuo Nome"
+institute: "Tua Università · Scuola di Dottorato"
+date: today
+date-format: "long"
+lang: it
+
+# ===========================================
+# Bibliografia
+# ===========================================
+
+bibliography: ../survey/bibliography.bib
+csl: apa.csl
+link-citations: true
+citation-style: apa
+
+# ===========================================
+# Formato di default: Reveal.js (per presentazioni)
+# ===========================================
+
+format:
+  revealjs:
+    theme: simple
+    transition: slide
+    slide-number: true
+    navigation-mode: linear
+    progress: true
+    controls: true
+    center: false
+    width: 1280
+    height: 720
+    margin: 0.1
+    min-scale: 0.2
+    max-scale: 2.0
+    
+    # Mermaid per diagrammi
+    mermaid:
+      theme: default
+    
+    # CSS custom
+    css:
+      - styles.css
+    
+    # Font Awesome per icone
+    include-in-header:
+      text: |
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    # Codice
+    code-line-numbers: true
+    code-overflow: wrap
+    code-copy: true
+    highlight-style: github
+    
+    # Footer
+    footer: "PhD Course · KG + CPS in Healthcare · 2026"
+  
+  # Formato PDF (handout per studenti)
+  pdf:
+    documentclass: article
+    margin-left: 20mm
+    margin-right: 20mm
+    margin-top: 20mm
+    margin-bottom: 20mm
+    fontsize: 11pt
+    toc: false
+    number-sections: false
+    colorlinks: true
+    linkcolor: blue
+    citecolor: blue
+    urlcolor: blue
+
+# ===========================================
+# Esecuzione codice
+# ===========================================
+
+execute:
+  echo: true           # Mostra codice sorgente
+  eval: true           # Esegui codice
+  warning: false       # Nascondi warning
+  message: false       # Nascondi messaggi
+  cache: true          # Cache risultati
+  freeze: auto         # Congela output
+
+# ===========================================
+# Knitr options (per chunk R, se usati)
+# ===========================================
+
+knitr:
+  opts_chunk:
+    comment: "#>"
+    fig.align: "center"
+
+# ===========================================
+# Link e navigazione
+# ===========================================
+
+website:
+  title: "KG + CPS in Healthcare"
+  navbar:
+    left:
+      - href: 01-kg-fundamentals.qmd
+        text: "1. Fondamenti KG"
+      - href: 02-kg-cps-healthcare.qmd
+        text: "2. KG + CPS"
+      - href: 03-bridge-to-lab.qmd
+        text: "3. Laboratorio"
+    right:
+      - icon: github
+        href: https://github.com/TUO-USERNAME/phd-course-kg-cps-healthcare
+      - icon: envelope
+        href: mailto:tua.email@domain.edu

@@ -1,0 +1,100 @@
+@prefix cardio: <http://example.org/cardio#> .
+@prefix snomed: <http://snomed.info/id/> .
+@prefix loinc:  <http://loinc.org/> .
+@prefix fhir:   <http://hl7.org/fhir/> .
+@prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:    <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:    <http://www.w3.org/2002/07/owl#> .
+
+############################################################
+#  Cardiac Patient Digital Twin — lab ontology (TBox)
+#  Subset aligned to SNOMED CT (diagnoses) + HL7 FHIR,
+#  LOINC for observations. Local cardio: namespace.
+############################################################
+cardio: a owl:Ontology ;
+    rdfs:label "Cardiac Patient Digital Twin ontology"@en ;
+    rdfs:comment "Lab subset aligned to SNOMED CT + HL7 FHIR; LOINC for observations."@en .
+
+# ---------------- Classes ----------------
+cardio:Patient        a owl:Class ; rdfs:subClassOf fhir:Patient ; rdfs:label "Patient"@en .
+cardio:WearableSensor a owl:Class ; rdfs:label "Wearable sensor"@en .
+cardio:ECGMeasurement a owl:Class ; rdfs:label "ECG measurement"@en .
+cardio:ClinicalEvent  a owl:Class ; rdfs:label "Clinical event"@en .
+cardio:Diagnosis      a owl:Class ; rdfs:label "Diagnosis"@en .
+cardio:Drug           a owl:Class ; rdfs:label "Drug"@en .
+
+# ---------------- Object properties ----------------
+cardio:hasDiagnosis a owl:ObjectProperty ;
+    rdfs:domain cardio:Patient ; rdfs:range cardio:Diagnosis .
+
+cardio:monitoredBy a owl:ObjectProperty ;
+    rdfs:domain cardio:Patient ; rdfs:range cardio:WearableSensor .
+
+cardio:hasEvent a owl:ObjectProperty ;
+    rdfs:domain cardio:Patient ; rdfs:range cardio:ClinicalEvent .
+
+cardio:takes a owl:ObjectProperty ;
+    rdfs:domain cardio:Patient ; rdfs:range cardio:Drug .
+
+cardio:produced a owl:ObjectProperty ;
+    rdfs:domain cardio:WearableSensor ; rdfs:range cardio:ECGMeasurement .
+
+cardio:interactsWith a owl:ObjectProperty , owl:SymmetricProperty ;
+    rdfs:domain cardio:Drug ; rdfs:range cardio:Drug ;
+    rdfs:comment "Clinically significant drug-drug interaction."@en .
+
+# ---------------- Datatype properties ----------------
+cardio:hasName       a owl:DatatypeProperty ; rdfs:range xsd:string .
+cardio:hasAge        a owl:DatatypeProperty ; rdfs:range xsd:integer .
+cardio:hasSex        a owl:DatatypeProperty ; rdfs:range xsd:string .
+cardio:hasEventType  a owl:DatatypeProperty ; rdfs:range xsd:string .
+cardio:hasHeartRate  a owl:DatatypeProperty ; rdfs:range xsd:integer .
+cardio:hasQTDuration a owl:DatatypeProperty ; rdfs:range xsd:integer .
+cardio:hasQRS        a owl:DatatypeProperty ; rdfs:range xsd:integer .
+cardio:hasRhythm     a owl:DatatypeProperty ; rdfs:range xsd:string .
+cardio:hasTimestamp  a owl:DatatypeProperty ; rdfs:range xsd:dateTime .
+cardio:hasValue      a owl:DatatypeProperty ; rdfs:range xsd:double .
+cardio:hasSeverity   a owl:DatatypeProperty ; rdfs:range xsd:string .
+cardio:hasUnit       a owl:DatatypeProperty ; rdfs:range xsd:string .
+cardio:hasConceptCode a owl:DatatypeProperty ; rdfs:range xsd:string .
+
+# ---------------- SNOMED CT diagnosis instances (real codes) ----------------
+snomed:22298006 a cardio:Diagnosis ; rdfs:label "Acute myocardial infarction"@en .
+snomed:49436004 a cardio:Diagnosis ; rdfs:label "Atrial fibrillation"@en .
+snomed:84114007 a cardio:Diagnosis ; rdfs:label "Heart failure"@en .
+snomed:38341003 a cardio:Diagnosis ; rdfs:label "Hypertensive disorder, systemic arterial"@en .
+snomed:73211009 a cardio:Diagnosis ; rdfs:label "Diabetes mellitus"@en .
+snomed:62709007 a cardio:Diagnosis ; rdfs:label "Cardiac arrhythmia"@en .
+snomed:48694002 a cardio:Diagnosis ; rdfs:label "Angina pectoris"@en .
+
+# ---------------- LOINC observation codes (real) ----------------
+cardio:LoincCode a owl:Class ; rdfs:label "LOINC observation code"@en .
+loinc:8867-4 a cardio:LoincCode ; rdfs:label "Heart rate"@en .
+loinc:8480-6 a cardio:LoincCode ; rdfs:label "Systolic blood pressure"@en .
+loinc:8462-4 a cardio:LoincCode ; rdfs:label "Diastolic blood pressure"@en .
+
+# ---------------- Drug individuals (local cardio:; map to RxNorm in production) ----------------
+cardio:Warfarin       a cardio:Drug ; rdfs:label "Warfarin"@en .
+cardio:Amiodarone     a cardio:Drug ; rdfs:label "Amiodarone"@en .
+cardio:Digoxin        a cardio:Drug ; rdfs:label "Digoxin"@en .
+cardio:Furosemide     a cardio:Drug ; rdfs:label "Furosemide"@en .
+cardio:Ramipril       a cardio:Drug ; rdfs:label "Ramipril"@en .
+cardio:Spironolactone a cardio:Drug ; rdfs:label "Spironolactone"@en .
+cardio:Metoprolol     a cardio:Drug ; rdfs:label "Metoprolol"@en .
+cardio:Bisoprolol     a cardio:Drug ; rdfs:label "Bisoprolol"@en .
+cardio:Aspirin        a cardio:Drug ; rdfs:label "Aspirin"@en .
+cardio:Atorvastatin   a cardio:Drug ; rdfs:label "Atorvastatin"@en .
+cardio:Apixaban       a cardio:Drug ; rdfs:label "Apixaban"@en .
+cardio:Metformin      a cardio:Drug ; rdfs:label "Metformin"@en .
+cardio:Amlodipine     a cardio:Drug ; rdfs:label "Amlodipine"@en .
+cardio:Lisinopril     a cardio:Drug ; rdfs:label "Lisinopril"@en .
+cardio:Diltiazem      a cardio:Drug ; rdfs:label "Diltiazem"@en .
+
+# ---------------- Drug-drug interactions (asserted once; symmetric) ----------------
+cardio:Warfarin    cardio:interactsWith cardio:Amiodarone .      # INR elevation / bleeding
+cardio:Warfarin    cardio:interactsWith cardio:Aspirin .         # bleeding
+cardio:Digoxin     cardio:interactsWith cardio:Amiodarone .      # digoxin toxicity
+cardio:Digoxin     cardio:interactsWith cardio:Furosemide .      # hypokalaemia -> toxicity
+cardio:Ramipril    cardio:interactsWith cardio:Spironolactone .  # hyperkalaemia
+cardio:Metoprolol  cardio:interactsWith cardio:Amiodarone .      # bradycardia

@@ -1,0 +1,525 @@
+---
+title: "Knowledge Graph e CPS in Sanità"
+subtitle: "PhD Lecture Module"
+author: "Pasquale De Meo"
+institute: "University of Messina"
+date: "July 17, 2026"
+pdf-engine: xelatex
+format:
+  beamer:
+    theme: "Madrid"
+    colortheme: "default"
+    fonttheme: "default"
+    slidelevel: 2
+    aspectratio: 169
+    fontsize: 10pt
+    incremental: false
+    navigation: horizontal
+    header-includes:
+      - \usepackage{tikz}
+      - \usetikzlibrary{positioning,arrows.meta,shapes.geometric,calc,fit}
+      - \usepackage{pgfplots}
+      - \usepackage{booktabs}
+      - \usepackage{graphicx}
+      - \usepackage{hyperref}
+    include-in-header:
+      text: |
+        \setbeamertemplate{navigation symbols}{}
+        \setbeamertemplate{footline}{
+          \leavevmode\hbox{
+            \begin{beamercolorbox}[wd=.33\paperwidth,ht=2.5ex,dp=1ex,center]{author in head/foot}
+              \usebeamerfont{author in head/foot}\insertshortauthor
+            \end{beamercolorbox}
+            \begin{beamercolorbox}[wd=.34\paperwidth,ht=2.5ex,dp=1ex,center]{title in head/foot}
+              \usebeamerfont{title in head/foot}\insertshorttitle
+            \end{beamercolorbox}
+            \begin{beamercolorbox}[wd=.33\paperwidth,ht=2.5ex,dp=1ex,right]{date in head/foot}
+              \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
+              \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+            \end{beamercolorbox}
+          }
+          \vskip0pt
+        }
+execute:
+  echo: false
+---
+
+<!-- Compile with:  quarto render section1_kg_heterogeneous_healthcare_data.qmd --to revealjs -->
+<!-- First section (25 min) of the three-hour lecture "Knowledge Graphs as Semantic   -->
+<!-- Bridges between CPS/IoT and Patient Digital Twins in Healthcare".                -->
+<!-- Audience: mixed-background PhD students (doctors, bioengineers, CS).             -->
+
+# From a Flood of Signals to a Single Decision {.center}
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=2.4cm, minimum height=7mm}
+]
+\node[box] (a)   at (0,1.5)  {Wearable ECG};
+\node[box] (c)   at (0,0.5)  {CGM glucose};
+\node[box] (b)   at (0,-0.5) {Smart bed / pump};
+\node[box] (e)   at (0,-1.5) {EHR / labs};
+\node[box] (raw) at (4.6,0)  {raw observations\\(heterogeneous)};
+\node[box] (d)   at (8.8,0)  {informed clinical\\decision};
+\draw[->,semithick] (a) -- (raw);
+\draw[->,semithick] (c) -- (raw);
+\draw[->,semithick] (b) -- (raw);
+\draw[->,semithick] (e) -- (raw);
+\draw[->,semithick,dashed] (raw) -- node[above,fill=white,inner sep=1pt,font=\scriptsize]{integration gap} (d);
+\end{tikzpicture}
+\end{center}
+```
+
+- Healthcare now runs on **streams of device data** — but a clinician needs **one coherent picture**, not four export files.
+- This section answers: *why is integrating healthcare data hard, and why is a **knowledge graph (KG)** the right tool for it?*
+- **Learning outcome:** by the end, you can justify a KG over a relational database for a concrete clinical integration task.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+In one sentence: what is the *most expensive* integration failure you have personally witnessed (or can imagine) when a clinician had to combine device data with the EHR? Keep your answer — we will revisit it at the end.
+:::
+
+**Reference.** Sarani Rad, F., Hendawi, R., Yang, X., & Li, J. (2024). *Personalized diabetes management with digital twins: A patient-centric knowledge graph approach*. **Journal of Personalized Medicine**, *14*(4), Article 359. https://doi.org/10.3390/jpm14040359
+
+---
+
+# Roadmap & Time Budget {.center}
+
+| Section | Focus | Time |
+|---|---|---|
+| **1. The practical problem** | Heterogeneous device data & the integration gap | 8 min |
+| **2. Knowledge Graph — the solution** | Definition, pillars, mini-KG, vs. databases | 10 min |
+| **3. Clinical relationships** | Complexity & relational patterns | 5 min |
+| **4. Healthcare ontologies** | Why we reuse controlled vocabularies | 2 min |
+
+- We move deliberately **from a concrete clinical problem → to a formal solution** — jargon is introduced only when it earns its place.
+- The running example is a **diabetic patient** monitored by a CGM, a wearable ECG, and an EHR.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Before we start: predict which of the four sections hides the *conceptual* core you would need for your own thesis. Note it down — we check at the end whether your intuition changed.
+:::
+
+
+# 1 · The Practical Problem
+## 8 minutes — *"Devices speak; clinicians need sentences."*
+
+- Modern care is **device-saturated**: the question is no longer *getting* data, but **making it jointly meaningful**.
+- We will isolate **four independent dimensions** in which healthcare data is heterogeneous — each one alone can break integration.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Name a clinical decision that is impossible to make correctly if you see only **one** device's data in isolation. (Hint: think drug–device interactions.)
+:::
+
+---
+
+## The Data Deluge: Volume Is the Easy Part
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=2.4cm, minimum height=7mm}
+]
+\node[box] (p1) at (0,1.5)  {Wearable ECG\\$\sim$500 Hz};
+\node[box] (p2) at (0,0.5)  {Smart bed\\pressure mats};
+\node[box] (p3) at (0,-0.5) {CGM\\1 reading / 5 min};
+\node[box] (p4) at (0,-1.5) {Infusion pump\\flow logs};
+\node[box] (v)  at (4.6,0)  {enormous\\data volume};
+\node[box] (q)  at (8.8,0)  {Quantity is solvable.\\Meaning is not.};
+\draw[->,semithick] (p1) -- (v);
+\draw[->,semithick] (p2) -- (v);
+\draw[->,semithick] (p3) -- (v);
+\draw[->,semithick] (p4) -- (v);
+\draw[->,semithick] (v) -- (q);
+\end{tikzpicture}
+\end{center}
+```
+
+- A single ICU bed can generate **thousands of data points per second** across ECG waveforms, ventilator telemetry, and infusion logs.
+- **Volume alone is an engineering problem** (storage, throughput) — and it is largely solved.
+- The unsolved problem is **heterogeneity**: the data was never designed to be read together.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Storage is cheap. So why does "having all the data" still not give you the answer? What exactly is missing between the raw byte and the clinical insight?
+:::
+
+---
+
+## Four Dimensions of Heterogeneity {.smaller}
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=2.5cm, minimum height=8mm}
+]
+\node[box] (dev) at (4.95,2)  {Healthcare devices\\CGM $\cdot$ ECG $\cdot$ smart bed $\cdot$ pump};
+\node[box] (h1)  at (0,0)     {STRUCTURAL\\JSON $\cdot$ CSV $\cdot$ DICOM $\cdot$ HL7 FHIR};
+\node[box] (h2)  at (3.3,0)   {SEMANTIC\\many terms, one concept};
+\node[box] (h3)  at (6.6,0)   {TEMPORAL\\continuous vs episodic};
+\node[box] (h4)  at (9.9,0)   {SPATIAL\\device $\cdot$ ward $\cdot$ central EHR};
+\node[box] (gap) at (4.95,-2) {Integration gap};
+\draw[->,semithick] (dev) -- (h1);
+\draw[->,semithick] (dev) -- (h2);
+\draw[->,semithick] (dev) -- (h3);
+\draw[->,semithick] (dev) -- (h4);
+\draw[->,semithick] (h1) -- (gap);
+\draw[->,semithick] (h2) -- (gap);
+\draw[->,semithick] (h3) -- (gap);
+\draw[->,semithick] (h4) -- (gap);
+\end{tikzpicture}
+\end{center}
+```
+
+- **Structural** — each device/export uses a different *format* (a wearable ships JSON, imaging ships DICOM, the EHR speaks HL7 FHIR).
+- **Semantic** — the *same* clinical concept (e.g., "blood glucose") is named differently across systems and terminologies.
+- **Temporal** — sampling rates clash: a CGM every 5 min, an ECG continuously, a lab test once a day.
+- **Spatial** — data lives in **different places**: a personal device, a ward monitor, a central EHR — each behind its own interface.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Of the four dimensions, which one would a relational database handle *worst*? Argue why — and which one would it handle well.
+:::
+
+---
+
+## The Core Challenge: Observations → Decisions
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=2.7cm, minimum height=8mm}
+]
+\node[box] (o) at (0,0.6)    {RAW OBSERVATIONS\\numbers $\cdot$ waveforms $\cdot$ codes};
+\node[box] (g) at (4.2,0.6)  {???\\integration \& meaning};
+\node[box] (d) at (8.4,0.6)  {INFORMED DECISION\\diagnosis $\cdot$ risk $\cdot$ therapy};
+\node[box] (k) at (4.2,-1.4) {we need a shared\\representation of meaning};
+\draw[->,semithick] (o) -- (g);
+\draw[->,semithick] (g) -- (d);
+\draw[->,semithick,dashed] (g) -- node[right,fill=white,inner sep=1pt,font=\scriptsize]{missing layer} (k);
+\end{tikzpicture}
+\end{center}
+```
+
+- A glucose reading, an ECG strip, and a lab result are **observations** — facts about a patient at an instant.
+- A clinician needs a **decision**: *"Is this patient heading toward hypoglycaemia in the next hour?"*
+- Between observation and decision sits a **missing layer**: a representation that says *what each value means, how they relate, and what they imply together*.
+
+::: {.callout-warning title="The crux"}
+The integration problem is **not** "join the tables." It is *"agree on what the data means."* A knowledge graph is a representation engineered for exactly that.
+:::
+
+---
+
+## Worked Example: One Diabetic Patient, Three Data Worlds
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=2.8cm, minimum height=8mm}
+]
+\node[box] (pat) at (5.4,2)   {Patient 12345\\Type 2 Diabetes $\cdot$ Metformin};
+\node[box] (cgm) at (0,0)     {CGM (Dexcom)\\glucose q5min $\cdot$ JSON};
+\node[box] (ecg) at (5.4,0)   {Wearable ECG\\heart rate $\cdot$ continuous $\cdot$ FHIR};
+\node[box] (ehr) at (10.8,0)  {EHR\\HbA1c, labs $\cdot$ episodic $\cdot$ HL7 FHIR};
+\node[box] (q)   at (5.4,-2)  {How do we fuse these to\\PREDICT hypoglycaemia risk?};
+\draw[->,semithick] (pat) -- (cgm);
+\draw[->,semithick] (pat) -- (ecg);
+\draw[->,semithick] (pat) -- (ehr);
+\draw[->,semithick] (cgm) -- (q);
+\draw[->,semithick] (ecg) -- (q);
+\draw[->,semithick] (ehr) -- (q);
+\end{tikzpicture}
+\end{center}
+```
+
+- **CGM** streams glucose every 5 minutes; **ECG** records heart rate continuously; **EHR** holds an HbA1c from last week's visit.
+- Three sources, three formats, three time scales, three locations — describing **one patient**.
+- **Clinical question:** *can we predict an impending hypoglycaemic event and warn before it happens?*
+- Answering this requires the sources to **agree on meaning and align in time** — the integration gap made concrete.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+A falling glucose trend + a rising heart rate often precedes hypoglycaemia. But the CGM and the ECG label their timestamps differently. Where exactly does the prediction break — and whose clock do you trust?
+:::
+
+**Reference.** Sarani Rad, F., Hendawi, R., Yang, X., & Li, J. (2024). *Personalized diabetes management with digital twins: A patient-centric knowledge graph approach*. **Journal of Personalized Medicine**, *14*(4), Article 359. https://doi.org/10.3390/jpm14040359
+
+
+# 2 · The Knowledge Graph — The Solution
+## 10 minutes — *"A graph that gives data its meaning."*
+
+- We now formalise the **missing layer** from Section 1 and give it a name: the **knowledge graph (KG)**.
+- Definition → three pillars → a worked mini-KG → why it beats a plain database.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Before the formal definition: in your own words, what distinguishes a "knowledge graph" from "just a diagram with boxes and arrows"? Hold that intuition — we will sharpen it.
+:::
+
+---
+
+## What Is a Knowledge Graph? (Formal Definition)
+
+::: {.callout-note title="Definition (after Hogan et al., 2021)"}
+A **knowledge graph** is a **directed, labelled graph** in which **nodes represent entities** and **edges represent named semantic relationships** between them, backed by a **formal schema (ontology)** that gives those relationships a well-defined meaning and supports **automated reasoning**.
+:::
+
+- **Directed** — edges have a direction (`Patient →hasDiagnosis→ Diagnosis`), because *A relates to B* does not imply *B relates to A*.
+- **Labelled** — every edge carries a **type** (`hasDiagnosis`, `assumes`, `monitoredBy`) that is itself a first-class concept.
+- **Semantically grounded** — relationships are not arbitrary strings; they are defined in an **ontology** so machines can interpret them consistently.
+
+::: {.callout-tip title="Intuition"}
+If a spreadsheet stores *values*, a KG stores **statements of the form *subject–predicate–object*** — i.e., *who is related to whom, and how*.
+:::
+
+**Reference.** Hogan, A., Blomqvist, E., Cochez, M., et al. (2021). *Knowledge Graphs*. **ACM Computing Surveys**, *54*(4), Article 71. https://doi.org/10.1145/3447772
+
+---
+
+## The Three Pillars of a Knowledge Graph {.smaller}
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=3.1cm, minimum height=8mm}
+]
+\node[box] (data)   at (0,1.4)   {DATA --- instances\\(asserted facts)};
+\node[box] (schema) at (0,0)     {SCHEMA --- ontology\\(types, rules, constraints)};
+\node[box] (infer)  at (0,-1.4)  {INFERENCE --- reasoning\\(derived facts)};
+\node[box] (kg)     at (5,0)     {Knowledge\\Graph};
+\node[box] (use)    at (9.2,0)   {queryable $\cdot$ comparable\\decision-ready};
+\draw[->,semithick] (data) -- (kg);
+\draw[->,semithick] (schema) -- (kg);
+\draw[->,semithick] (infer) -- (kg);
+\draw[->,semithick] (kg) -- (use);
+\end{tikzpicture}
+\end{center}
+```
+
+- **Data (A-box / instances)** — the concrete facts: *Patient 12345 takes Metformin.*
+- **Schema (T-box / ontology)** — the rules and types: *Metformin is a Drug; a Patient may assume a Drug.*
+- **Inference (reasoning)** — new facts the engine **derives** rather than stores: *because Metformin is a biguanide, and biguanides carry lactic-acidosis risk under contrast, the patient is flagged.*
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+A relational database has *data* and *schema*. Which of the three pillars does it **completely lack** — and why is that pillar the clinically dangerous one to be missing?
+:::
+
+**Reference.** Hogan, A., Blomqvist, E., Cochez, M., et al. (2021). *Knowledge Graphs*. **ACM Computing Surveys**, *54*(4), Article 71. https://doi.org/10.1145/3447772
+
+---
+
+## Mini-KG for Our Diabetic Patient {.smaller}
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=2.4cm, minimum height=7mm}
+]
+\node[box] (p)   at (5.9,2.7)  {Patient:12345};
+\node[box] (dx)  at (1.2,2.7)  {Diagnosis:\\Type 2 Diabetes};
+\node[box] (m)   at (10.6,2.7) {Drug: Metformin};
+\node[box] (cgm) at (2.9,0.9)  {Sensor:\\CGM\_Dexcom};
+\node[box] (ecg) at (8.9,0.9)  {Sensor:\\ECG\_Wearable};
+\node[box] (g)   at (2.9,-1.1) {Glucose 72 mg/dL\\LOINC 99504-3};
+\node[box] (h)   at (8.9,-1.1) {Heart rate 95 bpm\\LOINC 8867-4};
+\draw[->,semithick] (p) -- node[fill=white,inner sep=1pt,font=\tiny]{hasDiagnosis} (dx);
+\draw[->,semithick] (p) -- node[fill=white,inner sep=1pt,font=\tiny]{assumes} (m);
+\draw[->,semithick] (p) -- node[fill=white,inner sep=1pt,font=\tiny]{monitoredBy} (cgm);
+\draw[->,semithick] (p) -- node[fill=white,inner sep=1pt,font=\tiny]{monitoredBy} (ecg);
+\draw[->,semithick] (cgm) -- node[fill=white,inner sep=1pt,font=\tiny]{hasObservation} (g);
+\draw[->,semithick] (ecg) -- node[fill=white,inner sep=1pt,font=\tiny]{hasObservation} (h);
+\end{tikzpicture}
+\end{center}
+```
+
+- **Nodes (entities):** `Patient:12345`, `Diagnosis:Type2Diabetes`, `Drug:Metformin`, `Sensor:CGM_Dexcom`, `Sensor:ECG_Wearable`.
+- **Edges (relationships):** `hasDiagnosis`, `assumes`, `monitoredBy`, `hasObservation`.
+- Every node and edge carries a **standard code** (LOINC for observations) — so another hospital reads the *same meaning*, not just the same text.
+- One graph now holds **the patient, their disease, their therapy, and their live sensor observations** together.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Add one more edge to this graph that would let you reason about hypoglycaemia risk. What node did you have to invent — and what does that tell you about the schema's coverage?
+:::
+
+---
+
+## How the KG Solves the Integration Problem
+
+- **Standardises terminology** — diagnoses map to **SNOMED CT**, observations to **LOINC**; "glucose", "Glc", and "blood sugar" collapse to one concept.
+- **Links disparate entities into a single representation** — CGM, ECG and EHR become *one connected graph* about one patient, regardless of source format.
+- **Enables inference** — the engine derives facts no one explicitly recorded.
+
+::: {.callout-tip title="Inference in action"}
+`Patient assumes Metformin` **+** `patient must undergo contrast-enhanced CT` **→** `risk of lactic acidosis` — flagged automatically, without a clinician coding the check by hand.
+:::
+
+- The three Section-1 heterogeneities (**structural, semantic, temporal**) are each absorbed by a different KG mechanism: ontology mapping, shared codes, and time-stamped observations.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+The lactic-acidosis rule fires from two facts the KG never stored together. Whose responsibility is the *correctness* of that derived fact — the ontology author, the reasoning engine, or the clinician?
+:::
+
+---
+
+## Why Not a Database? KG vs Traditional Approaches {.smaller}
+
+| Approach | Relationships | Schema flexibility | Inference |
+|---|---|---|---|
+| **Relational DB** | via expensive multi-table `JOIN`s | rigid (schema-first) | none |
+| **Document store** (JSON/NoSQL) | no explicit relationships | flexible but shallow | none |
+| **Knowledge Graph** | first-class, queryable edges | flexible, evolving ontology | automatic reasoning |
+
+- **Relational DB:** superb for stable, tabular data — but cross-source clinical queries become **tangled JOINs**, and the schema cannot express *"if X then Y"*.
+- **Document store:** easy to ingest heterogeneous blobs — but there are **no explicit relationships and no reasoning**; each document is an island.
+- **KG:** relationships are **the data**; the ontology can evolve; and a reasoner **derives consequences** the database would never surface.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Your hospital already runs a mature SQL EHR. You will not rip it out. So where does the KG *sit* relative to the existing database — beside it, on top of it, or inside it? Defend your architecture.
+:::
+
+**Reference.** Hogan, A., et al. (2021). *Knowledge Graphs*. **ACM Computing Surveys**, *54*(4), Article 71. https://doi.org/10.1145/3447772
+
+
+# 3 · Clinical Relationships — Complexity & Patterns
+## 5 minutes — *"Not all edges are created equal."*
+
+- A KG's power lives in its **edges** — but clinical relationships obey **structural patterns** that the schema must respect.
+- Modelling the *wrong pattern* produces the *wrong inference* — a clinical safety issue, not a cosmetic one.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+If your KG silently treated `causes` as symmetric, what specific clinical error could it commit? Find one before the next slide.
+:::
+
+---
+
+## Relationship Patterns in Healthcare KGs {.smaller}
+
+| Pattern | Healthcare example | Property |
+|---|---|---|
+| **Symmetric** | `sibling_of` (rare clinically) | if A~B then B~A |
+| **Antisymmetric** | `parent_of`, `causes` | A→B forbids B→A |
+| **Inverse** | `prescribes` ↔ `prescribed_by`; `monitors` ↔ `monitored_by` | two names, one fact |
+| **Composition** | `assumes` ∘ `interacts_with` → `at_risk_of_interaction` | new edge from two |
+| **One-to-many** | one patient → many diagnoses, meds, observations | high fan-out |
+
+- **Antisymmetry** matters: if *A causes B*, then *B does not cause A* — confusing this inverts aetiology.
+- **Inverse pairs** let you query from either end without duplicating data (*"which drugs does this patient take"* ↔ *"which patients take this drug"*).
+- **Composition** is how **reasoning creates new knowledge**: two traversed edges yield a third edge that was never stored.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Compose a clinical rule of the form `A → B` ∘ `B → C` ⇒ `A → C` from your own domain. Which of your two stored edges is the *risky* one to trust?
+:::
+
+**Reference.** Leskovec, J. (2021). *CS224W: Machine Learning with Graphs — Knowledge Graphs* (lecture slides 24–28). Stanford University. https://web.stanford.edu/class/cs224w/
+
+---
+
+## Composition: Where Inference Is Born {.smaller}
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=2.6cm, minimum height=7mm}
+]
+\node[box] (p) at (0,1)    {Patient:12345};
+\node[box] (m) at (4,1)    {Metformin};
+\node[box] (c) at (8,1)    {Iodinated contrast};
+\node[box] (r) at (4,-1.3) {at\_risk\_of:\\lactic acidosis};
+\draw[->,semithick] (p) -- node[fill=white,inner sep=1pt,font=\scriptsize]{assumes} (m);
+\draw[->,semithick,dashed] (m) -- node[fill=white,inner sep=1pt,font=\scriptsize]{interacts\_with} (c);
+\draw[->,very thick,double,double distance=1.2pt] (p) -- node[fill=white,inner sep=1pt,font=\scriptsize]{composition rule} (r);
+\end{tikzpicture}
+\end{center}
+```
+
+- Two stored edges — `assumes` and `interacts_with` — are **composed** into a derived edge `at_risk_of`.
+- The derived edge **never existed in the raw data**: it is the KG *thinking*, not just storing.
+- **One-to-many** fan-out amplifies this: a patient with many medications triggers many composition checks in parallel — exactly the workload that defeats manual clinical review.
+
+::: {.callout-warning title="Why this section matters"}
+If the schema mis-models a relationship's pattern (say, treats `causes` as symmetric, or omits an inverse), **reasoning silently degrades**. Correct relationship modelling is the precondition for trustworthy clinical inference.
+:::
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Design a composition rule whose conclusion is **clinically dangerous if wrong**. Now: how would a clinician *audit* that the rule fired correctly?
+:::
+
+
+# 4 · Healthcare Ontologies — The Controlled Vocabulary
+## 2 minutes — *"You don't invent the vocabulary."*
+
+- A KG is only as interoperable as the **codes on its nodes**. In healthcare, that means **reusing standard ontologies**, not minting your own.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+You could, in principle, invent a private vocabulary for your hospital's KG. Give one concrete reason a regulator would reject it — and one reason your own researchers would resent it.
+:::
+
+---
+
+## The Standards Stack: Reuse, Don't Reinvent {.smaller}
+
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=3.2cm, minimum height=7mm}
+]
+\node[box] (fhir)   at (0,1.8)  {HL7 FHIR\\exchange via RESTful APIs};
+\node[box] (snomed) at (0,0.6)  {SNOMED CT\\350{,}000+ clinical concepts};
+\node[box] (loinc)  at (0,-0.6) {LOINC\\lab \& observation codes};
+\node[box] (umls)   at (0,-1.8) {UMLS\\metathesaurus $\cdot$ 200+ vocabularies};
+\node[box] (kg)     at (5,0)    {Knowledge\\Graph};
+\draw[->,semithick] (fhir) -- (kg);
+\draw[->,semithick] (snomed) -- (kg);
+\draw[->,semithick] (loinc) -- (kg);
+\draw[->,semithick] (umls) -- (kg);
+\end{tikzpicture}
+\end{center}
+```
+
+- **HL7 FHIR** — the *exchange* spine: healthcare data over **RESTful APIs** (resources, not just codes).
+- **SNOMED CT** — the *clinical terminology*: **350,000+ concepts** covering diagnoses, procedures, findings.
+- **LOINC** — *lab & observation* coding (e.g., the glucose code `99504-3` on our mini-KG).
+- **UMLS** — a *metathesaurus* that cross-maps **200+ vocabularies** so they can speak to each other.
+
+::: {.callout-warning title="Why you cannot roll your own ontology"}
+**Interoperability** (hospitals must exchange data) · **Knowledge reuse** (decades of curated clinical logic) · **Regulatory compliance** (certification requires standard codes). A private vocabulary fails all three.
+:::
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Your team must pick **one** vocabulary as the "spine" of a national patient-twin platform. Choose — and state precisely what each *other* vocabulary then contributes as a satellite.
+:::
+
+**References.** HL7 FHIR, https://www.hl7.org/fhir/ · SNOMED CT, https://www.snomed.org/ · Bodenreider, O. (2004). The Unified Medical Language System (UMLS): integrating biomedical terminology. **Nucleic Acids Research**, *32*(suppl_1), D267–D270. https://doi.org/10.1093/nar/gkh063
+
+
+# Key Takeaways {.center}
+
+- Healthcare data is heterogeneous on **four independent axes** (structural, semantic, temporal, spatial) — volume is the easy part.
+- A **knowledge graph** is a directed, labelled, semantically grounded graph built on **three pillars**: data, schema, and inference (Hogan et al., 2021).
+- The KG **absorbs heterogeneity** by standardising codes (SNOMED CT, LOINC), linking sources, and **deriving** clinically consequential facts (e.g., lactic-acidosis risk).
+- **Correct relationship modelling** (symmetric / antisymmetric / inverse / composition) is the precondition for **safe** clinical reasoning.
+- **Reuse standard ontologies** (FHIR, SNOMED CT, LOINC, UMLS) — interoperability, reuse, and regulation forbid inventing your own.
+
+::: {.callout-note title="Discussion Prompt for PhD Students — revisit"}
+Return to the integration failure you named on slide 1. Which of the four heterogeneity dimensions, and which missing KG pillar, best explains it? Has your diagnosis changed in 25 minutes?
+:::
+
+---
+
+## References (APA 7th edition) {.smaller}
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+These sources span a formal survey, a standard, and a clinical case study. Which *type* of source is most under-represented for your thesis — and where would you look for it?
+:::
+
+- Bodenreider, O. (2004). The Unified Medical Language System (UMLS): integrating biomedical terminology. *Nucleic Acids Research*, *32*(suppl_1), D267–D270. https://doi.org/10.1093/nar/gkh063
+- Health Level Seven International. (n.d.). *HL7 FHIR*. https://www.hl7.org/fhir/
+- Hogan, A., Blomqvist, E., Cochez, M., d'Amato, C., de Melo, G., Gutierrez, C., et al. (2021). Knowledge Graphs. *ACM Computing Surveys*, *54*(4), Article 71. https://doi.org/10.1145/3447772
+- Leskovec, J. (2021). *CS224W: Machine Learning with Graphs — Knowledge Graphs* [Lecture slides, slides 6–9 and 24–28]. Stanford University. https://web.stanford.edu/class/cs224w/
+- Sarani Rad, F., Hendawi, R., Yang, X., & Li, J. (2024). Personalized diabetes management with digital twins: A patient-centric knowledge graph approach. *Journal of Personalized Medicine*, *14*(4), Article 359. https://doi.org/10.3390/jpm14040359
+- SNOMED International. (n.d.). *SNOMED CT*. https://www.snomed.org/

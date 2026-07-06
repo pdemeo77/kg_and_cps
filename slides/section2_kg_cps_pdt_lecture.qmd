@@ -1,19 +1,45 @@
 ---
-title: "Knowledge Graphs as Semantic Bridges"
-subtitle: "Between CPS/IoT and Patient Digital Twins in Healthcare"
-author: "PhD Lecture Module · 45 minutes"
-institute: "Graduate Seminar · Knowledge Graphs & Cyber-Physical Systems"
-date: "2026"
+title: "Knowledge Graph e CPS in Sanità"
+subtitle: "PhD Lecture Module"
+author: "Pasquale De Meo"
+institute: "University of Messina"
+date: "July 17, 2026"
+pdf-engine: xelatex
 format:
-  revealjs:
-    theme: simple
-    transition: slide
-    slide-number: true
-    navigation-mode: linear
-    link-external-icon: true
-    mermaid:
-      theme: default
-    css: styles.css
+  beamer:
+    theme: "Madrid"
+    colortheme: "default"
+    fonttheme: "default"
+    slidelevel: 2
+    aspectratio: 169
+    fontsize: 10pt
+    incremental: false
+    navigation: horizontal
+    header-includes:
+      - \usepackage{tikz}
+      - \usetikzlibrary{positioning,arrows.meta,shapes.geometric,calc,fit}
+      - \usepackage{pgfplots}
+      - \usepackage{booktabs}
+      - \usepackage{graphicx}
+      - \usepackage{hyperref}
+    include-in-header:
+      text: |
+        \setbeamertemplate{navigation symbols}{}
+        \setbeamertemplate{footline}{
+          \leavevmode\hbox{
+            \begin{beamercolorbox}[wd=.33\paperwidth,ht=2.5ex,dp=1ex,center]{author in head/foot}
+              \usebeamerfont{author in head/foot}\insertshortauthor
+            \end{beamercolorbox}
+            \begin{beamercolorbox}[wd=.34\paperwidth,ht=2.5ex,dp=1ex,center]{title in head/foot}
+              \usebeamerfont{title in head/foot}\insertshorttitle
+            \end{beamercolorbox}
+            \begin{beamercolorbox}[wd=.33\paperwidth,ht=2.5ex,dp=1ex,right]{date in head/foot}
+              \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
+              \insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+            \end{beamercolorbox}
+          }
+          \vskip0pt
+        }
 execute:
   echo: false
 ---
@@ -23,10 +49,19 @@ execute:
 
 # The Semantic Bridge Thesis {.center}
 
-```{mermaid}
-flowchart LR
-    CPS["CPS / IoT<br/>sensors & devices"] ==>|semantic bridge| KG["Knowledge Graph<br/>FHIR · SNOMED CT · SOSA"]
-    KG ==>|reasoning| PDT["Patient<br/>Digital Twin"]
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=3cm, minimum height=9mm}
+]
+\node[box] (cps) at (0,0)   {CPS / IoT\\sensors \& devices};
+\node[box] (kg)  at (5,0)   {Knowledge Graph\\FHIR $\cdot$ SNOMED CT $\cdot$ SOSA};
+\node[box] (pdt) at (10,0)  {Patient\\Digital Twin};
+\draw[->,very thick,double,double distance=1.2pt] (cps) -- node[fill=white,inner sep=1pt,font=\scriptsize]{semantic bridge} (kg);
+\draw[->,very thick,double,double distance=1.2pt] (kg) -- node[fill=white,inner sep=1pt,font=\scriptsize]{reasoning} (pdt);
+\end{tikzpicture}
+\end{center}
 ```
 
 - Heterogeneous CPS/IoT streams are **syntactically rich but semantically poor**; KGs supply the missing meaning layer.
@@ -117,13 +152,25 @@ CONNECTED is conceptual with no reference implementation. Which of its four requ
 
 ## Ontology Stacking: One Patient, Many Vocabularies {.smaller}
 
-```{mermaid}
-flowchart TB
-    OBS["SSN / SOSA<br/>observation structure"] --> OWL["OWL 2.0<br/>logic & constraints"]
-    FHIR["HL7 FHIR<br/>exchange & API"] --> OWL
-    SNOMED["SNOMED CT<br/>clinical terms"] --> OWL
-    ICD["ICD-10<br/>classification / billing"] --> OWL
-    OWL --> PHKG["Personal Health<br/>Knowledge Graph"]
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=3cm, minimum height=7mm}
+]
+\node[box] (obs)    at (0,1.8)  {SSN / SOSA\\observation structure};
+\node[box] (fhir)   at (0,0.6)  {HL7 FHIR\\exchange \& API};
+\node[box] (snomed) at (0,-0.6) {SNOMED CT\\clinical terms};
+\node[box] (icd)    at (0,-1.8) {ICD-10\\classification / billing};
+\node[box] (owl)    at (5,0)    {OWL 2.0\\logic \& constraints};
+\node[box] (phkg)   at (9.2,0)  {Personal Health\\Knowledge Graph};
+\draw[->,semithick] (obs) -- (owl);
+\draw[->,semithick] (fhir) -- (owl);
+\draw[->,semithick] (snomed) -- (owl);
+\draw[->,semithick] (icd) -- (owl);
+\draw[->,semithick] (owl) -- (phkg);
+\end{tikzpicture}
+\end{center}
 ```
 
 - **FHIR** = exchange spine · **SNOMED CT** = clinical semantics · **ICD-10** = administrative granularity · **SSN/SOSA** = observation provenance · **OWL** = the logic that binds them.
@@ -152,13 +199,25 @@ Before seeing the pipelines: design your own real-time vs. batch cut-over point.
 
 ## The Generic Sensor-to-Triple Pipeline
 
-```{mermaid}
-flowchart LR
-    A["Physical CPS/IoT<br/>wearables · CGM · EEG"] --> B["Raw data<br/>CSV / JSON / streams"]
-    B --> C["Ontology mapping<br/>R2RML · SOSA · FHIR"]
-    C --> D["RDF Knowledge Graph<br/>OWL triples"]
-    D --> E["Reasoning & query<br/>SPARQL · SWRL · ML"]
-    E --> F["Patient Digital Twin"]
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=2pt, font=\scriptsize, text width=1.8cm, minimum height=9mm}
+]
+\node[box] (a) at (0,0)    {Physical CPS/IoT\\wearables $\cdot$ CGM $\cdot$ EEG};
+\node[box] (b) at (2.1,0)  {Raw data\\CSV / JSON / streams};
+\node[box] (c) at (4.2,0)  {Ontology mapping\\R2RML $\cdot$ SOSA $\cdot$ FHIR};
+\node[box] (d) at (6.3,0)  {RDF Knowledge Graph\\OWL triples};
+\node[box] (e) at (8.4,0)  {Reasoning \& query\\SPARQL $\cdot$ SWRL $\cdot$ ML};
+\node[box] (f) at (10.5,0) {Patient Digital Twin};
+\draw[->,semithick] (a) -- (b);
+\draw[->,semithick] (b) -- (c);
+\draw[->,semithick] (c) -- (d);
+\draw[->,semithick] (d) -- (e);
+\draw[->,semithick] (e) -- (f);
+\end{tikzpicture}
+\end{center}
 ```
 
 - Every Section-2 paper is an **instantiation** of stages B→D; they differ in *mapping language, where materialisation occurs, and update frequency*.
@@ -174,14 +233,27 @@ At which stage would you insert a **provenance/quality stamp** (e.g., sensor cal
 
 ## Unified Semantic Framework: RDF + R2RML Ingestion
 
-```{mermaid}
-flowchart TB
-    W["Wearables & smart devices"] --> R2["R2RML mapping rules<br/>RDB → RDF"]
-    E["EHR / relational DBs"] --> R2
-    R2 --> KG["RDF Knowledge Graph<br/>OWL-aligned · FHIR vocab"]
-    DIST["Distributed graph-build layer<br/>real-time ingestion"] -.scales.-> KG
-    KG --> ML["Graph-based ML pipeline<br/>inference / extraction"]
-    ML --> CI["Clinical intelligence"]
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=2.6cm, minimum height=8mm}
+]
+\node[box] (w)    at (0,1.2)   {Wearables \& smart devices};
+\node[box] (e)    at (0,-0.6)  {EHR / relational DBs};
+\node[box] (r2)   at (3.4,0.3) {R2RML mapping rules\\RDB $\rightarrow$ RDF};
+\node[box] (dist) at (6.4,2.1) {Distributed graph-build layer\\real-time ingestion};
+\node[box] (kg)   at (6.4,0.3) {RDF Knowledge Graph\\OWL-aligned $\cdot$ FHIR vocab};
+\node[box] (ml)   at (9.6,0.3) {Graph-based ML pipeline\\inference / extraction};
+\node[box] (ci)   at (9.6,-1.6){Clinical intelligence};
+\draw[->,semithick] (w) -- (r2);
+\draw[->,semithick] (e) -- (r2);
+\draw[->,semithick] (r2) -- (kg);
+\draw[->,semithick,dashed] (dist) -- node[right,fill=white,inner sep=1pt,font=\scriptsize]{scales} (kg);
+\draw[->,semithick] (kg) -- (ml);
+\draw[->,semithick] (ml) -- (ci);
+\end{tikzpicture}
+\end{center}
 ```
 
 - **Architecture (Pourvahab et al., 2025):** R2RML declaratively maps relational healthcare data into OWL-aligned triples; a **distributed graph-construction layer** absorbs real-time IoT volume.
@@ -198,13 +270,25 @@ R2RML assumes a stable relational schema. Healthcare schemas drift (new LOINC/FH
 
 ## Wearable CPS-to-KG Construction (SSN/SOSA)
 
-```{mermaid}
-flowchart LR
-    S["MOX2-5 accelerometer<br/>physical activity"] --> CSV["CSV sensor export"]
-    CSV --> ANN["SSN/SOSA annotation<br/>sensor / observation / feature / result"]
-    ANN --> RDF["OWL-compliant RDF graph"]
-    RDF --> Q["SPARQL query & comparison"]
-    RDF --> FHIR["FHIR-compliant clinical repo"]
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=2pt, font=\scriptsize, text width=2.3cm, minimum height=8mm}
+]
+\node[box] (s)    at (0,0.6)    {MOX2-5 accelerometer\\physical activity};
+\node[box] (csv)  at (2.7,0.6)  {CSV sensor export};
+\node[box] (ann)  at (5.4,0.6)  {SSN/SOSA annotation\\sensor / obs / feature / result};
+\node[box] (rdf)  at (8.1,0.6)  {OWL-compliant RDF graph};
+\node[box] (q)    at (10.8,0.6) {SPARQL query \& comparison};
+\node[box] (fhir) at (8.1,-1.2) {FHIR-compliant clinical repo};
+\draw[->,semithick] (s) -- (csv);
+\draw[->,semithick] (csv) -- (ann);
+\draw[->,semithick] (ann) -- (rdf);
+\draw[->,semithick] (rdf) -- (q);
+\draw[->,semithick] (rdf) -- (fhir);
+\end{tikzpicture}
+\end{center}
 ```
 
 - **Architecture (Chatterjee et al., 2024):** a **concrete CSV→RDF** pipeline — the most explicit "how to triplify a wearable" reference in the set.
@@ -221,13 +305,23 @@ This pipeline reads CSV exports. What is the minimal change to make it stream-na
 
 ## IoT-KG-Digital-Twin: A Three-Layer Pipeline
 
-```{mermaid}
-flowchart TB
-    L1["Layer 1 — Wearable IoT<br/>EEG · GSR · heart rate"] --> L2
-    L2["Layer 2 — Semantic interop<br/>IoT-Lite + SOSA/SSN → RDF"]
-    L2 --> L3["Layer 3 — KG-driven Digital Twin<br/>mental-health trajectories"]
-    L3 --> INT["Personalised interventions"]
-    STD["HL7 FHIR · SNOMED CT · W3C stack"] -.cross-domain reasoning.-> L3
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=3.2cm, minimum height=8mm}
+]
+\node[box] (l1)  at (0,2.2)  {Layer 1 --- Wearable IoT\\EEG $\cdot$ GSR $\cdot$ heart rate};
+\node[box] (l2)  at (0,0.7)  {Layer 2 --- Semantic interop\\IoT-Lite + SOSA/SSN $\rightarrow$ RDF};
+\node[box] (l3)  at (0,-0.8) {Layer 3 --- KG-driven Digital Twin\\mental-health trajectories};
+\node[box] (int) at (5,-0.8) {Personalised interventions};
+\node[box] (std) at (5,1.4)  {HL7 FHIR $\cdot$ SNOMED CT $\cdot$ W3C stack};
+\draw[->,semithick] (l1) -- (l2);
+\draw[->,semithick] (l2) -- (l3);
+\draw[->,semithick] (l3) -- (int);
+\draw[->,semithick,dashed] (std) -- node[fill=white,inner sep=1pt,font=\scriptsize]{cross-domain reasoning} (l3);
+\end{tikzpicture}
+\end{center}
 ```
 
 - **Architecture (Gyrard et al., 2024):** sensor layer → semantic-annotation layer (IoT-Lite + SOSA/SSN) → KG-driven DT that models **patient mental-health trajectories**.
@@ -244,14 +338,26 @@ Emotion/affect lacks a clean SNOMED CT representation. If the clinical vocabular
 
 ## FHIR-Native Ingestion & Model Binding
 
-```{mermaid}
-flowchart LR
-    DT["EHR + IoT time-stamped streams"] --> API["FHIR R4 REST API"]
-    API --> KG["Persistent OWL-DL KG<br/>semantic backbone"]
-    KG --> MIMO["MIMO ontology<br/>standardises model I/O"]
-    MIMO --> BIND["Manifest-based binding<br/>auto model registration"]
-    BIND --> PDT["Multi-AI Patient Digital Twin<br/>e.g., stroke risk"]
-    KG -->|automatic gap detection| PDT
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=2pt, font=\scriptsize, text width=1.9cm, minimum height=9mm}
+]
+\node[box] (dt)   at (0,0)    {EHR + IoT time-stamped streams};
+\node[box] (api)  at (2.2,0)  {FHIR R4 REST API};
+\node[box] (kg)   at (4.4,0)  {Persistent OWL-DL KG\\semantic backbone};
+\node[box] (mimo) at (6.6,0)  {MIMO ontology\\standardises model I/O};
+\node[box] (bind) at (8.8,0)  {Manifest-based binding\\auto model registration};
+\node[box] (pdt)  at (11.0,0) {Multi-AI Patient Digital Twin\\e.g., stroke risk};
+\draw[->,semithick] (dt) -- (api);
+\draw[->,semithick] (api) -- (kg);
+\draw[->,semithick] (kg) -- (mimo);
+\draw[->,semithick] (mimo) -- (bind);
+\draw[->,semithick] (bind) -- (pdt);
+\draw[->,semithick] (kg) to[bend left=35] node[above,fill=white,inner sep=1pt,font=\tiny]{automatic gap detection} (pdt);
+\end{tikzpicture}
+\end{center}
 ```
 
 - **Architecture (Marfoglia et al., 2026):** a **FHIR R4 REST API** retrieves time-stamped EHR/IoT streams into a persistent **OWL-DL KG**; the novel **MIMO ontology** standardises every AI model's inputs/outputs for transparent, reusable composition.
@@ -301,12 +407,23 @@ Pick one row. What single engineering change would shift its reasoning column on
 
 ## The Reasoning Mechanism Landscape {.smaller}
 
-```{mermaid}
-flowchart LR
-    R["Rule-based<br/>OWL-DL · SWRL"] --> T["Patient Digital Twin"]
-    N["Neuro-symbolic<br/>KG embeddings + rules"] --> T
-    Q["RAG / query-driven<br/>LLM over SPARQL/KG"] --> T
-    T --> DSS["Clinical decision support"]
+```{=latex}
+\begin{center}
+\begin{tikzpicture}[
+  >=Stealth,
+  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=3pt, font=\footnotesize, text width=3cm, minimum height=8mm}
+]
+\node[box] (r)   at (0,1.2)   {Rule-based\\OWL-DL $\cdot$ SWRL};
+\node[box] (n)   at (0,0)     {Neuro-symbolic\\KG embeddings + rules};
+\node[box] (q)   at (0,-1.2)  {RAG / query-driven\\LLM over SPARQL/KG};
+\node[box] (t)   at (4.7,0)   {Patient Digital Twin};
+\node[box] (dss) at (8.7,0)   {Clinical decision support};
+\draw[->,semithick] (r) -- (t);
+\draw[->,semithick] (n) -- (t);
+\draw[->,semithick] (q) -- (t);
+\draw[->,semithick] (t) -- (dss);
+\end{tikzpicture}
+\end{center}
 ```
 
 - **Rule-based (OWL-DL/SWRL):** transparent, auditable, but brittle & authoring-heavy — used by Marfoglia (2026), Krämer (2025), Sarani Rad (2024).
@@ -394,19 +511,19 @@ Of the four axes, only **one** currently blocks clinical deployment more than th
 
 | Paper (year) | Scalability | Temporal reasoning | Privacy / federated | Evaluation |
 |---|:--:|:--:|:--:|:--:|
-| Pourvahab et al. (2025) | ✅ distributed layer | — | ✗ | ✅ interop metrics |
-| Gyrard et al. (2024) | ◐ | ✅ temporal SPARQL | ✗ | ◐ use-case demo |
-| Marfoglia et al. (2026) | ✅ end-to-end bench | ✅ time-aware | ✗ | ✅ stroke benchmark |
-| Carbonaro et al. (2023) | — | ✅ identified req | ✅ privacy-by-design | — conceptual |
-| Krämer (2025) | ◐ | ✅ temporal inference | ✅ class-assertion fed. | ◐ synthetic only |
-| Sarani Rad et al. (2024) | ◐ | ✅ incremental PHKG | ✗ | ✅ real cohort |
-| Chatterjee et al. (2024) | — | — | ✗ | ✅ real vs synthetic |
-| Hendawi & Li (2024) | ◐ prototype | ✅ longitudinal | ✅ RBAC schema | ✅ real EHR |
+| Pourvahab et al. (2025) | Yes: distributed layer | — | No | Yes: interop metrics |
+| Gyrard et al. (2024) | Part | Yes: temporal SPARQL | No | Part: use-case demo |
+| Marfoglia et al. (2026) | Yes: end-to-end bench | Yes: time-aware | No | Yes: stroke benchmark |
+| Carbonaro et al. (2023) | — | Yes: identified req | Yes: privacy-by-design | — conceptual |
+| Krämer (2025) | Part | Yes: temporal inference | Yes: class-assertion fed. | Part: synthetic only |
+| Sarani Rad et al. (2024) | Part | Yes: incremental PHKG | No | Yes: real cohort |
+| Chatterjee et al. (2024) | — | — | No | Yes: real vs synthetic |
+| Hendawi & Li (2024) | Part: prototype | Yes: longitudinal | Yes: RBAC schema | Yes: real EHR |
 
-- Legend: ✅ addressed · ◐ partial · — absent. **Privacy is the rarest axis; benchmarks are inconsistent.**
+- Legend: **Yes** = addressed · **Part** = partial · **No / —** = absent. Privacy is the rarest axis; benchmarks are inconsistent.
 
 ::: {.callout-note title="Discussion Prompt for PhD Students"}
-Every "✅" hides a caveat. Pick one green cell and argue why it is really a ◐ when measured against a clinical regulator's bar.
+Every "Yes" hides a caveat. Pick one green cell and argue why it is really a "Part" when measured against a clinical regulator's bar.
 :::
 
 **References.** Pourvahab et al. (2025) · Gyrard et al. (2024) · Marfoglia et al. (2026) · Carbonaro et al. (2023) · Krämer (2025) · Sarani Rad et al. (2024) · Chatterjee et al. (2024) · Hendawi & Li (2024) — full DOIs on the References slide.
@@ -483,10 +600,10 @@ Pick **one** of RQ1–RQ3. State its single biggest feasibility risk, and name t
 - **Ingestion is real-time; reasoning is not** — that gap *is* the clinical-latency problem.
 - **Rule-based reasoning dominates**; neuro-symbolic/RAG remain promising but ungrounded clinically.
 - **Privacy and benchmarks are the twin blind spots** of the entire corpus.
-- A defensible PhD lives where the matrix has **a ✗ on a deployment-critical axis**.
+- A defensible PhD lives where the matrix has **a "No" on a deployment-critical axis**.
 
 ::: {.callout-note title="Discussion Prompt for PhD Students"}
-State, in one sentence, the research question your thesis would attack — then check: does it sit on a ✗ cell from the synthesis matrix? If not, is it actually PhD-sized?
+State, in one sentence, the research question your thesis would attack — then check: does it sit on a "No" cell from the synthesis matrix? If not, is it actually PhD-sized?
 :::
 
 **Reference.** Bibliography compiled for *"Knowledge Graphs as Semantic Bridges between CPS/IoT and Patient Digital Twins"* (8 papers, 2023–2026), APA 7th edition.
