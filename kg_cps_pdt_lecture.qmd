@@ -1,0 +1,509 @@
+---
+title: "Knowledge Graphs as Semantic Bridges"
+subtitle: "Between CPS/IoT and Patient Digital Twins in Healthcare"
+author: "PhD Lecture Module · 45 minutes"
+institute: "Graduate Seminar · Knowledge Graphs & Cyber-Physical Systems"
+date: "2026"
+format:
+  revealjs:
+    theme: simple
+    transition: slide
+    slide-number: true
+    navigation-mode: linear
+    link-external-icon: true
+    mermaid:
+      theme: default
+    css: styles.css
+execute:
+  echo: false
+---
+
+<!-- Compile with:  quarto render kg_cps_pdt_lecture.qmd --to revealjs -->
+<!-- Optional styles.css is referenced; remove the `css:` line if not used. -->
+
+# The Semantic Bridge Thesis {.center}
+
+```{mermaid}
+flowchart LR
+    CPS["CPS / IoT<br/>sensors & devices"] ==>|semantic bridge| KG["Knowledge Graph<br/>FHIR · SNOMED CT · SOSA"]
+    KG ==>|reasoning| PDT["Patient<br/>Digital Twin"]
+```
+
+- Heterogeneous CPS/IoT streams are **syntactically rich but semantically poor**; KGs supply the missing meaning layer.
+- A KG makes observations **queryable, reason-able, and clinically comparable** — the substrate on which a Twin is simulated.
+- **Lecture thesis:** the *quality of the bridge* (ontologies + pipelines + reasoning), not the sensors, determines clinical trustworthiness.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+If the KG is the bridge, where exactly does it break first in a real ICU — at ingestion, at alignment, or at reasoning? Defend your claim with one failure mode.
+:::
+
+**Reference.** Carbonaro, A., Marfoglia, A., Nardini, F., & Mellone, S. (2023). *CONNECTED: Leveraging digital twins and personal knowledge graphs in healthcare digitalization*. **Frontiers in Digital Health**, *5*, Article 1322428. https://doi.org/10.3389/fdgth.2023.1322428
+
+---
+
+# Roadmap & Time Budget {.center}
+
+| Section | Focus | Time |
+|---|---|---|
+| **1. Foundations & Standards** | Ontology stack, architectures, interop limits | 10 min |
+| **2. CPS-to-KG Integration Pipelines** | Sensor→triple architectures, real-time vs batch | 15 min |
+| **3. Digital Twin & AI Reasoning** | Rule-based / neuro-symbolic / RAG, validation | 12 min |
+| **4. Open Challenges & Frontiers** | Scalability, privacy, benchmarks, PhD topics | 8 min |
+
+- Eight papers (2023–2026) are **re-cut thematically**, not presented one-by-one.
+- Watch for a recurring tension: **standards completeness vs. real-time clinical latency**.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Which of the four sections hides the PhD-defining problem? Predict now, then revisit at the end — has your answer changed?
+:::
+
+**Reference.** Bibliography compiled for *"Knowledge Graphs as Semantic Bridges between CPS/IoT and Patient Digital Twins"* (8 papers, 2023–2026), APA 7th edition — see closing References slide.
+
+# 1 · Foundations & Standards
+## 10 minutes — *"What language do the sensors speak?"*
+
+- Goal: establish the **ontology vocabulary** and the **conceptual architecture** before any pipeline.
+- Anchored by **Hendawi & Li (2024)** — clinical terminologies; **Chatterjee et al. (2024)** — sensor ontologies; **Carbonaro et al. (2023)** — blueprint.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Three standards bodies (HL7, W3C, IHTSDO/SNOMED) ship at different speeds. Whose release cadence becomes the bottleneck for a 2026 clinical deployment?
+:::
+
+**Reference.** Hendawi, R., & Li, J. (2024). *Comprehensive personal health knowledge graph for effective management and utilization of personal health data*. In **Proceedings of IEEE AIMHC** (pp. 1–8). IEEE. https://doi.org/10.1109/aimhc59811.2024.00026
+
+---
+
+## Healthcare Ontology Foundations: From Codes to Graphs
+
+- **Core contribution:** A *Comprehensive Personal Health KG (PHKG)* unifying EHR, wearables, insurance, and **social determinants of health (SDoH)** under one OWL schema with **SNOMED CT + ICD-10** mapped to nodes.
+- Privacy is **schema-native** (role-based access control embedded in the KG), not bolted on; SPARQL exposes **longitudinal/temporal** queries.
+- **Ontology used:** OWL · SNOMED CT (clinical) · ICD-10 (administrative).
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+SNOMED CT (post-coordinated clinical detail) and ICD-10 (billing granularity) describe the *same patient* at different resolutions. Where does information irreversibly leak in this mapping — and can SDoH (no dominant vocabulary) ever be first-class?
+:::
+
+**Reference.** Hendawi, R., & Li, J. (2024). *Comprehensive personal health knowledge graph for effective management and utilization of personal health data*. In **Proceedings of IEEE AIMHC** (pp. 1–8). IEEE. https://doi.org/10.1109/aimhc59811.2024.00026
+
+---
+
+## Sensor Semantics: The SSN/SOSA Bridge
+
+- **Core contribution:** Annotates **MOX2-5 accelerometer** observations as OWL/RDF triples via W3C **SSN/SOSA**; converts **CSV → RDF** and compares real vs. synthetic activity data through SPARQL.
+- Formally models **sensor · observation · feature-of-interest · result**, yielding device-agnostic, interoperable activity graphs with an explicit **FHIR integration pathway**.
+- **Ontology used:** W3C SSN/SOSA (observation structure), candidate FHIR alignment.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+SSN/SOSA describes *how* an observation was made but not *what it means clinically*. Where, exactly, does the SOSA-to-FHIR/Observation mapping lose the physiological context the Twin needs?
+:::
+
+**Reference.** Chatterjee, A., Gerdes, M., Prinz, A., Riegler, M., & Martínez, S. (2024). *Semantic representation and comparative analysis of physical activity sensor observations using MOX2-5 sensor in real and synthetic datasets: A proof-of-concept study*. **Scientific Reports**, *14*, Article 55183. https://doi.org/10.1038/s41598-024-55183-6
+
+---
+
+## Conceptual Blueprint: CONNECTED (PKG + DT)
+
+- **Core contribution (seminal 2023):** A systematic review distilled into a **layered architecture** — CPS/IoT acquisition → OWL/FHIR semantic alignment → **Personal Knowledge Graph** (evolving) → **DT simulation**.
+- Formalises four requirements rarely co-located: **semantic interoperability, privacy-by-design, real-time data fusion, temporal reasoning**.
+- **Ontology used:** OWL · FHIR (alignment layer); DT engine sits *above* the PKG.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+CONNECTED is conceptual with no reference implementation. Which of its four requirements is *most* under-specified today — and would a federated DT-to-PKG link even be auditable under GDPR Art. 22 (automated decisions)?
+:::
+
+**Reference.** Carbonaro, A., Marfoglia, A., Nardini, F., & Mellone, S. (2023). *CONNECTED: Leveraging digital twins and personal knowledge graphs in healthcare digitalization*. **Frontiers in Digital Health**, *5*, Article 1322428. https://doi.org/10.3389/fdgth.2023.1322428
+
+---
+
+## Ontology Stacking: One Patient, Many Vocabularies {.smaller}
+
+```{mermaid}
+flowchart TB
+    OBS["SSN / SOSA<br/>observation structure"] --> OWL["OWL 2.0<br/>logic & constraints"]
+    FHIR["HL7 FHIR<br/>exchange & API"] --> OWL
+    SNOMED["SNOMED CT<br/>clinical terms"] --> OWL
+    ICD["ICD-10<br/>classification / billing"] --> OWL
+    OWL --> PHKG["Personal Health<br/>Knowledge Graph"]
+```
+
+- **FHIR** = exchange spine · **SNOMED CT** = clinical semantics · **ICD-10** = administrative granularity · **SSN/SOSA** = observation provenance · **OWL** = the logic that binds them.
+- No single standard is canonical; the **KG is where they are reconciled** — which makes alignment the failure-prone bottleneck.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+If you could declare exactly **one** vocabulary the "spine" of a national PDT platform, which do you choose — and what do you sacrifice from the others?
+:::
+
+**References.** Hendawi & Li (2024), https://doi.org/10.1109/aimhc59811.2024.00026 · Chatterjee et al. (2024), https://doi.org/10.1038/s41598-024-55183-6 · Carbonaro et al. (2023), https://doi.org/10.3389/fdgth.2023.1322428
+
+
+# 2 · CPS-to-KG Integration Pipelines
+## 15 minutes — *"From a voltage on a wrist to a triple in a graph"*
+
+- The **bridge** is itself an engineered artifact: ingestion → mapping → triple materialisation → query.
+- Four architectures, one spectrum: **how much happens at the edge vs. centrally, and how often**.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Before seeing the pipelines: design your own real-time vs. batch cut-over point. What is the maximum latency a hypoglycaemia-alerting pipeline can tolerate before it is clinically useless?
+:::
+
+**Reference.** Pourvahab, M., Monteiro, A., Pais, S., & Pombo, N. (2025). *A unified semantic framework for IoT-healthcare data interoperability: A graph-based machine learning approach using RDF and R2RML*. In **Proceedings of the ACM Symposium on Applied Computing** (Article 3757054). ACM. https://doi.org/10.1145/3756681.3757054
+
+---
+
+## The Generic Sensor-to-Triple Pipeline
+
+```{mermaid}
+flowchart LR
+    A["Physical CPS/IoT<br/>wearables · CGM · EEG"] --> B["Raw data<br/>CSV / JSON / streams"]
+    B --> C["Ontology mapping<br/>R2RML · SOSA · FHIR"]
+    C --> D["RDF Knowledge Graph<br/>OWL triples"]
+    D --> E["Reasoning & query<br/>SPARQL · SWRL · ML"]
+    E --> F["Patient Digital Twin"]
+```
+
+- Every Section-2 paper is an **instantiation** of stages B→D; they differ in *mapping language, where materialisation occurs, and update frequency*.
+- The honest engineering question is **not** "RDF or not?" but "real-time materialisation vs. batch re-build?"
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+At which stage would you insert a **provenance/quality stamp** (e.g., sensor calibration, trust score)? Argue why doing it earlier or later changes the downstream reasoning.
+:::
+
+**References.** Pourvahab et al. (2025), https://doi.org/10.1145/3756681.3757054 · Chatterjee et al. (2024), https://doi.org/10.1038/s41598-024-55183-6
+
+---
+
+## Unified Semantic Framework: RDF + R2RML Ingestion
+
+```{mermaid}
+flowchart TB
+    W["Wearables & smart devices"] --> R2["R2RML mapping rules<br/>RDB → RDF"]
+    E["EHR / relational DBs"] --> R2
+    R2 --> KG["RDF Knowledge Graph<br/>OWL-aligned · FHIR vocab"]
+    DIST["Distributed graph-build layer<br/>real-time ingestion"] -.scales.-> KG
+    KG --> ML["Graph-based ML pipeline<br/>inference / extraction"]
+    ML --> CI["Clinical intelligence"]
+```
+
+- **Architecture (Pourvahab et al., 2025):** R2RML declaratively maps relational healthcare data into OWL-aligned triples; a **distributed graph-construction layer** absorbs real-time IoT volume.
+- **Transformation steps:** relational row → R2RML template → RDF triple → OWL-classified node → FHIR-compatible vocabulary.
+- **Real-time vs. batch trade-off:** *ingestion* is real-time, but the **graph-ML inference** is batch over the constructed KG → low-latency alerts need a streaming bypass.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+R2RML assumes a stable relational schema. Healthcare schemas drift (new LOINC/FHIR versions). How do you version an R2RML mapping without re-tripling historical patients?
+:::
+
+**Reference.** Pourvahab, M., Monteiro, A., Pais, S., & Pombo, N. (2025). *A unified semantic framework for IoT-healthcare data interoperability: A graph-based machine learning approach using RDF and R2RML*. In **Proceedings of the ACM Symposium on Applied Computing** (Article 3757054). ACM. https://doi.org/10.1145/3756681.3757054
+
+---
+
+## Wearable CPS-to-KG Construction (SSN/SOSA)
+
+```{mermaid}
+flowchart LR
+    S["MOX2-5 accelerometer<br/>physical activity"] --> CSV["CSV sensor export"]
+    CSV --> ANN["SSN/SOSA annotation<br/>sensor / observation / feature / result"]
+    ANN --> RDF["OWL-compliant RDF graph"]
+    RDF --> Q["SPARQL query & comparison"]
+    RDF --> FHIR["FHIR-compliant clinical repo"]
+```
+
+- **Architecture (Chatterjee et al., 2024):** a **concrete CSV→RDF** pipeline — the most explicit "how to triplify a wearable" reference in the set.
+- **Transformation steps:** raw accelerometry → activity classification → SOSA `sosa:Observation` with `hasResult` → linked to `FeatureOfInterest` (patient).
+- **Real-time vs. batch trade-off:** proof-of-concept is **offline/batch** (file export); no native streaming → gains simplicity & reproducibility, loses latency, so unsuitable as-is for acute monitoring.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+This pipeline reads CSV exports. What is the minimal change to make it stream-native — and does adding an MQTT/Kafka hop reintroduce a semantic gap the SOSA layer was meant to close?
+:::
+
+**Reference.** Chatterjee, A., Gerdes, M., Prinz, A., Riegler, M., & Martínez, S. (2024). *Semantic representation and comparative analysis of physical activity sensor observations using MOX2-5 sensor in real and synthetic datasets: A proof-of-concept study*. **Scientific Reports**, *14*, Article 55183. https://doi.org/10.1038/s41598-024-55183-6
+
+---
+
+## IoT-KG-Digital-Twin: A Three-Layer Pipeline
+
+```{mermaid}
+flowchart TB
+    L1["Layer 1 — Wearable IoT<br/>EEG · GSR · heart rate"] --> L2
+    L2["Layer 2 — Semantic interop<br/>IoT-Lite + SOSA/SSN → RDF"]
+    L2 --> L3["Layer 3 — KG-driven Digital Twin<br/>mental-health trajectories"]
+    L3 --> INT["Personalised interventions"]
+    STD["HL7 FHIR · SNOMED CT · W3C stack"] -.cross-domain reasoning.-> L3
+```
+
+- **Architecture (Gyrard et al., 2024):** sensor layer → semantic-annotation layer (IoT-Lite + SOSA/SSN) → KG-driven DT that models **patient mental-health trajectories**.
+- **Transformation steps:** physiological signal → SOSA observation → KG node typed by SNOMED CT → **temporal SPARQL** detects burnout/depression patterns.
+- **Real-time vs. batch trade-off:** continuous *emotion monitoring* is near-real-time, but **reasoning is query-driven (semi-batch)** → good for screening, insufficient for crisis intervention.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Emotion/affect lacks a clean SNOMED CT representation. If the clinical vocabulary can't name the thing you're sensing, is the DT reasoning over a well-founded model at all?
+:::
+
+**Reference.** Gyrard, A., Mohammadi, S., Gaur, M., & Kung, A. (2024). *IoT-based preventive mental health using knowledge graphs and standards for better well-being* [Preprint]. **arXiv**. https://doi.org/10.48550/arxiv.2406.13791
+
+---
+
+## FHIR-Native Ingestion & Model Binding
+
+```{mermaid}
+flowchart LR
+    DT["EHR + IoT time-stamped streams"] --> API["FHIR R4 REST API"]
+    API --> KG["Persistent OWL-DL KG<br/>semantic backbone"]
+    KG --> MIMO["MIMO ontology<br/>standardises model I/O"]
+    MIMO --> BIND["Manifest-based binding<br/>auto model registration"]
+    BIND --> PDT["Multi-AI Patient Digital Twin<br/>e.g., stroke risk"]
+    KG -->|automatic gap detection| PDT
+```
+
+- **Architecture (Marfoglia et al., 2026):** a **FHIR R4 REST API** retrieves time-stamped EHR/IoT streams into a persistent **OWL-DL KG**; the novel **MIMO ontology** standardises every AI model's inputs/outputs for transparent, reusable composition.
+- **Transformation steps:** FHIR resource → OWL-DL assertion → MIMO interface match → manifest-driven binding → multi-AI pipeline.
+- **Real-time vs. batch trade-off:** real-time API *retrieval* + automatic **gap detection** when sensor coverage is insufficient, but **OWL-DL inference latency** under load is the throttle.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+MIMO makes models *pluggable*. Does plug-ability erode clinical accountability — if a stroke-risk model is hot-swapped at runtime, who signs off on the prediction that triggered an intervention?
+:::
+
+**Reference.** Marfoglia, A., D'Errico, C., Mellone, S., & Carbonaro, A. (2026). *A knowledge graph-driven framework for deploying AI-powered patient digital twins*. **Future Generation Computer Systems**, Article 108380. https://doi.org/10.1016/j.future.2026.108380
+
+---
+
+## Real-Time vs. Batch: Cross-Architecture Trade-offs {.smaller}
+
+| Architecture | Ingestion | Materialisation | Reasoning cadence | Best fit |
+|---|---|---|---|---|
+| **Pourvahab 2025** (RDF/R2RML) | real-time (distributed) | on-write | batch ML | large-scale analytics |
+| **Chatterjee 2024** (CSV→SOSA) | offline/batch | on-load | query-time | research / reproducibility |
+| **Gyrard 2024** (3-layer) | near-real-time | on-annotation | semi-batch SPARQL | screening / prevention |
+| **Marfoglia 2026** (FHIR+MIMO) | real-time API | on-retrieval | on-demand OWL-DL | clinical decision support |
+
+- **Universal pattern:** ingestion moves toward real-time; *reasoning* stays batch/periodic — the gap between them is the clinical-latency bottleneck.
+- None of the four provides **streaming incremental reasoning** with bounded guarantees.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Pick one row. What single engineering change would shift its reasoning column one cell to the left (more real-time), and what correctness property do you risk losing?
+:::
+
+**References.** Pourvahab et al. (2025), https://doi.org/10.1145/3756681.3757054 · Chatterjee et al. (2024), https://doi.org/10.1038/s41598-024-55183-6 · Gyrard et al. (2024), https://doi.org/10.48550/arxiv.2406.13791 · Marfoglia et al. (2026), https://doi.org/10.1016/j.future.2026.108380
+
+
+# 3 · Digital Twin & AI Reasoning
+## 12 minutes — *"A graph that thinks — but how, and is it right?"*
+
+- Reasoning families in play: **rule-based (OWL-DL / SWRL)**, **neuro-symbolic / RAG**, and **query-driven** temporal inference.
+- For each: mechanism → validation methodology → **clinical applicability gap**.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+"Reasoning" is doing a lot of work here. Before the slides: which mechanism would you trust to *change a drug dose* unaided — and why is your intuition probably wrong?
+:::
+
+**Reference.** Krämer, B. J. (2025). *A semantic framework for patient digital twins in chronic care* [Preprint]. **arXiv**. https://doi.org/10.48550/arxiv.2510.09134
+
+---
+
+## The Reasoning Mechanism Landscape {.smaller}
+
+```{mermaid}
+flowchart LR
+    R["Rule-based<br/>OWL-DL · SWRL"] --> T["Patient Digital Twin"]
+    N["Neuro-symbolic<br/>KG embeddings + rules"] --> T
+    Q["RAG / query-driven<br/>LLM over SPARQL/KG"] --> T
+    T --> DSS["Clinical decision support"]
+```
+
+- **Rule-based (OWL-DL/SWRL):** transparent, auditable, but brittle & authoring-heavy — used by Marfoglia (2026), Krämer (2025), Sarani Rad (2024).
+- **Neuro-symbolic / RAG:** emerging for clinical QA; trades some auditability for adaptivity — *not yet grounded* in this corpus's deployed systems.
+- **Common gap across all:** scarce prospective clinical validation.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+A rules engine is explainable but slow to evolve; a neuro-symbolic model adapts but hides logic. For a **regulated** PDT, which side of the trade-off does the law force you onto?
+:::
+
+**References.** Marfoglia et al. (2026), https://doi.org/10.1016/j.future.2026.108380 · Krämer (2025), https://doi.org/10.48550/arxiv.2510.09134 · Sarani Rad et al. (2024), https://doi.org/10.3390/jpm14040359
+
+---
+
+## OWL-DL + MIMO Reasoning for Patient Digital Twins
+
+- **Reasoning mechanism (Marfoglia et al., 2026):** **OWL-DL inference** enforces semantic consistency and **auto-triggers gap detection** when sensor coverage is insufficient; the **MIMO ontology** standardises AI model I/O for dynamic, manifest-driven multi-model composition.
+- **Validation:** benchmarked end-to-end on **stroke-risk prediction** with real-world, time-aware clinical streams → demonstrates KG-to-PDT scalability.
+- **Clinical applicability gap:** no prospective trial; generalisation beyond stroke untested; **OWL-DL reasoning latency under concurrent load** unquantified.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+MIMO guarantees *interface* compatibility, not *semantic* correctness. Two models with matching I/O can disagree ontologically — how would you detect that before a twin silently contradicts itself?
+:::
+
+**Reference.** Marfoglia, A., D'Errico, C., Mellone, S., & Carbonaro, A. (2026). *A knowledge graph-driven framework for deploying AI-powered patient digital twins*. **Future Generation Computer Systems**, Article 108380. https://doi.org/10.1016/j.future.2026.108380
+
+---
+
+## Federated SWRL Reasoning: Privacy-First Patient Twins
+
+- **Reasoning mechanism (Krämer, 2025):** the **Patient Medical Digital Twin (PMDT)** in **OWL 2.0** with five clinical Blueprints; **SWRL rules executed at the edge** over multimodal IoT time-series; only **OWL class assertions** (never raw data) are propagated centrally.
+- **Validation:** synthetic patient scenarios in **diabetes & heart failure** — checks *completeness of ontological coverage* and *soundness of temporal inference chains*.
+- **Clinical applicability gap:** synthetic-only, no real deployment; SWRL coverage depends on **expert rule authoring**; federated reasoning untested at scale.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Propagating only class assertions looks privacy-safe — but OWL inferences can *re-identify* a rare patient. When does "no raw data" still leak a patient?
+:::
+
+**Reference.** Krämer, B. J. (2025). *A semantic framework for patient digital twins in chronic care* [Preprint]. **arXiv**. https://doi.org/10.48550/arxiv.2510.09134
+
+---
+
+## PHKG-Driven Diabetes Twin: Reasoning on a Live Graph
+
+- **Reasoning mechanism (Sarani Rad et al., 2024):** a **Personal Health KG (PHKG)** is the digital twin's substrate — it **auto-updates** as CGM/EHR/PROM observations arrive; **OWL reasoning infers hypoglycaemia-risk patterns** and medication-adjustment cues (HL7 FHIR for exchange).
+- **Validation:** evaluated on a **real patient cohort**; superior glycaemic-outcome prediction vs. rule-based baselines.
+- **Clinical applicability gap:** single disease, **retrospective cohort**, no prospective RCT; **PHKG update latency** under high-frequency CGM unaddressed.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+The PHKG updates incrementally — but a stale edge can flip a hypoglycaemia inference. Design a *temporal-validity* mechanism: when does a triple "expire"?
+:::
+
+**Reference.** Sarani Rad, F., Hendawi, R., Yang, X., & Li, J. (2024). *Personalized diabetes management with digital twins: A patient-centric knowledge graph approach*. **Journal of Personalized Medicine**, *14*(4), Article 359. https://doi.org/10.3390/jpm14040359
+
+---
+
+## Reasoning Cross-Check: Mental-Health Twin
+
+- **Reasoning mechanism (Gyrard et al., 2024):** **temporal SPARQL** queries against the patient KG detect burnout/depression trajectories; SOSA/SSN + SNOMED CT + FHIR enable cross-domain clinical joins.
+- **Validation:** proof-of-concept **use-case demonstration** linked to SDG-3 targets — *no clinical-cohort benchmark*.
+- **Clinical applicability gap:** affect lacks clean SNOMED CT representation → reasoning rests on **under-specified clinical semantics**; intervention triggering unvalidated.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+If the KG can't crisply represent "burnout trajectory," is the Twin simulating a patient or merely a sensor-derived proxy? How would you measure the semantic gap?
+:::
+
+**Reference.** Gyrard, A., Mohammadi, S., Gaur, M., & Kung, A. (2024). *IoT-based preventive mental health using knowledge graphs and standards for better well-being* [Preprint]. **arXiv**. https://doi.org/10.48550/arxiv.2406.13791
+
+
+# 4 · Open Challenges & Research Frontiers
+## 8 minutes — *"Where the graph still breaks"*
+
+- Synthesise across **all eight papers** on four axes: **scalability, temporal reasoning, privacy/federation, evaluation benchmarks**.
+- Goal: convert gaps into **three PhD-defining research questions**.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Of the four axes, only **one** currently blocks clinical deployment more than the others. Which — and can you name the paper whose absence on that axis is most telling?
+:::
+
+**Reference.** Bibliography compiled for *"Knowledge Graphs as Semantic Bridges between CPS/IoT and Patient Digital Twins"* (8 papers, 2023–2026), APA 7th edition — see References.
+
+---
+
+## Cross-Paper Synthesis Matrix {.smaller}
+
+| Paper (year) | Scalability | Temporal reasoning | Privacy / federated | Evaluation |
+|---|:--:|:--:|:--:|:--:|
+| Pourvahab et al. (2025) | ✅ distributed layer | — | ✗ | ✅ interop metrics |
+| Gyrard et al. (2024) | ◐ | ✅ temporal SPARQL | ✗ | ◐ use-case demo |
+| Marfoglia et al. (2026) | ✅ end-to-end bench | ✅ time-aware | ✗ | ✅ stroke benchmark |
+| Carbonaro et al. (2023) | — | ✅ identified req | ✅ privacy-by-design | — conceptual |
+| Krämer (2025) | ◐ | ✅ temporal inference | ✅ class-assertion fed. | ◐ synthetic only |
+| Sarani Rad et al. (2024) | ◐ | ✅ incremental PHKG | ✗ | ✅ real cohort |
+| Chatterjee et al. (2024) | — | — | ✗ | ✅ real vs synthetic |
+| Hendawi & Li (2024) | ◐ prototype | ✅ longitudinal | ✅ RBAC schema | ✅ real EHR |
+
+- Legend: ✅ addressed · ◐ partial · — absent. **Privacy is the rarest axis; benchmarks are inconsistent.**
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Every "✅" hides a caveat. Pick one green cell and argue why it is really a ◐ when measured against a clinical regulator's bar.
+:::
+
+**References.** Pourvahab et al. (2025) · Gyrard et al. (2024) · Marfoglia et al. (2026) · Carbonaro et al. (2023) · Krämer (2025) · Sarani Rad et al. (2024) · Chatterjee et al. (2024) · Hendawi & Li (2024) — full DOIs on the References slide.
+
+---
+
+## Scalability × Temporal Reasoning
+
+- **The contradiction:** CPS streams demand *fresh* graphs; OWL-DL/SWRL reasoning is **non-incremental** → re-materialisation cost grows with graph size.
+- Only **Pourvahab (2025)** and **Marfoglia (2026)** tackle scale, and neither provides **streaming incremental reasoning with bounded latency**.
+- Temporal support is mostly **query-time** (SPARQL) or **scenario-based** (Krämer), not a first-class temporal model (e.g., valid-time RDF).
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Design a temporal KG where a triple carries `[t_start, t_end)` validity and reasoners update only the *delta*. What breaks first — the OWL-DL classifier, the SPARQL index, or the clinical timestamp semantics?
+:::
+
+**References.** Pourvahab et al. (2025), https://doi.org/10.1145/3756681.3757054 · Marfoglia et al. (2026), https://doi.org/10.1016/j.future.2026.108380 · Krämer (2025), https://doi.org/10.48550/arxiv.2510.09134
+
+---
+
+## Privacy-Preserving & Federated KGs
+
+- **Best in class:** Krämer (2025) propagates *only OWL class assertions*; Hendawi & Li (2024) embed **RBAC in the schema**; Carbonaro (2023) elevates **privacy-by-design** to a requirement.
+- **Collective gap:** no **differential privacy, secure multi-party computation, or verifiable federation** over health KGs; **inference-based re-identification** of rare patients is unanalysed.
+- Consent + governance (CONNECTED's open agenda) remain **unimplemented** in any reviewed system.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Federated learning hides gradients, not *graph structure*. What does a patient's KG topology alone reveal about their diagnosis — even with zero raw values?
+:::
+
+**References.** Krämer (2025), https://doi.org/10.48550/arxiv.2510.09134 · Hendawi & Li (2024), https://doi.org/10.1109/aimhc59811.2024.00026 · Carbonaro et al. (2023), https://doi.org/10.3389/fdgth.2023.1322428
+
+---
+
+## Evaluation Benchmarks: The Missing Yardstick
+
+- Each paper invents **its own** dataset/metric — interop metrics (Pourvahab), SPARQL coverage (Chatterjee), cohort AUC (Sarani Rad), scalability bench (Marfoglia), synthetic completeness (Krämer).
+- There is **no shared CPS-KG-PDT benchmark** measuring semantic interoperability *and* inference latency *and* twin fidelity together.
+- Synthetic-only validation (Krämer, Gyrard) cannot certify clinical soundness.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Define the **three metrics** a community benchmark must mandate so that two different KG-PDT systems become genuinely comparable. What does each metric deliberately *exclude*?
+:::
+
+**References.** Pourvahab et al. (2025) · Chatterjee et al. (2024) · Sarani Rad et al. (2024) · Marfoglia et al. (2026) · Krämer (2025) · Gyrard et al. (2024) — full DOIs on the References slide.
+
+---
+
+## Three Open PhD Research Questions {.smaller}
+
+::: {.callout-tip title="RQ1 — Streaming Temporal Reasoning"}
+How can we perform **incremental temporal reasoning** (valid-time RDF + delta-aware OWL/SWRL) over CPS/IoT streams with **bounded, clinically-tolerable latency** — instead of periodic batch re-materialisation?
+:::
+
+::: {.callout-tip title="RQ2 — Verifiably-Private Federated KG Reasoning"}
+Can we design **federated neuro-symbolic reasoning** that never exposes raw patient triples *or* re-identifying graph structure, with **provable privacy guarantees and full auditability** (GDPR Art. 22)?
+:::
+
+::: {.callout-tip title="RQ3 — A Shared CPS-KG-PDT Benchmark"}
+What benchmark suite (datasets, interop/latency/fidelity metrics, baselines) would let heterogeneous KG-PDT architectures be compared on equal terms — and what synthetic→real data ladder makes it clinically credible?
+:::
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+Pick **one** of RQ1–RQ3. State its single biggest feasibility risk, and name the paper in this corpus whose gap it most directly inherits.
+:::
+
+**Reference.** Synthesised from gaps in all eight papers (2023–2026) — see References slide.
+
+---
+
+## Key Takeaways {.center}
+
+- **KGs are the bridge** — but the bridge's quality is set by *ontology alignment*, not sensor count.
+- **Ingestion is real-time; reasoning is not** — that gap *is* the clinical-latency problem.
+- **Rule-based reasoning dominates**; neuro-symbolic/RAG remain promising but ungrounded clinically.
+- **Privacy and benchmarks are the twin blind spots** of the entire corpus.
+- A defensible PhD lives where the matrix has **a ✗ on a deployment-critical axis**.
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+State, in one sentence, the research question your thesis would attack — then check: does it sit on a ✗ cell from the synthesis matrix? If not, is it actually PhD-sized?
+:::
+
+**Reference.** Bibliography compiled for *"Knowledge Graphs as Semantic Bridges between CPS/IoT and Patient Digital Twins"* (8 papers, 2023–2026), APA 7th edition.
+
+---
+
+## References (APA 7th edition) {.smaller}
+
+::: {.callout-note title="Discussion Prompt for PhD Students"}
+These eight papers share a blind spot. Name one missing voice — a method, a clinical domain, or a geography — that your thesis would add to the corpus.
+:::
+
+- Carbonaro, A., Marfoglia, A., Nardini, F., & Mellone, S. (2023). CONNECTED: Leveraging digital twins and personal knowledge graphs in healthcare digitalization. *Frontiers in Digital Health*, *5*, Article 1322428. https://doi.org/10.3389/fdgth.2023.1322428
+- Chatterjee, A., Gerdes, M., Prinz, A., Riegler, M., & Martínez, S. (2024). Semantic representation and comparative analysis of physical activity sensor observations using MOX2-5 sensor in real and synthetic datasets: A proof-of-concept study. *Scientific Reports*, *14*, Article 55183. https://doi.org/10.1038/s41598-024-55183-6
+- Gyrard, A., Mohammadi, S., Gaur, M., & Kung, A. (2024). *IoT-based preventive mental health using knowledge graphs and standards for better well-being* [Preprint]. arXiv. https://doi.org/10.48550/arxiv.2406.13791
+- Hendawi, R., & Li, J. (2024). Comprehensive personal health knowledge graph for effective management and utilization of personal health data. In *Proceedings of the IEEE 2nd International Conference on AI in Medicine and Health Care (AIMHC)* (pp. 1–8). IEEE. https://doi.org/10.1109/aimhc59811.2024.00026
+- Krämer, B. J. (2025). *A semantic framework for patient digital twins in chronic care* [Preprint]. arXiv. https://doi.org/10.48550/arxiv.2510.09134
+- Marfoglia, A., D'Errico, C., Mellone, S., & Carbonaro, A. (2026). A knowledge graph-driven framework for deploying AI-powered patient digital twins. *Future Generation Computer Systems*, Article 108380. https://doi.org/10.1016/j.future.2026.108380
+- Pourvahab, M., Monteiro, A., Pais, S., & Pombo, N. (2025). A unified semantic framework for IoT-healthcare data interoperability: A graph-based machine learning approach using RDF and R2RML. In *Proceedings of the ACM Symposium on Applied Computing* (Article 3757054). ACM. https://doi.org/10.1145/3756681.3757054
+- Sarani Rad, F., Hendawi, R., Yang, X., & Li, J. (2024). Personalized diabetes management with digital twins: A patient-centric knowledge graph approach. *Journal of Personalized Medicine*, *14*(4), Article 359. https://doi.org/10.3390/jpm14040359

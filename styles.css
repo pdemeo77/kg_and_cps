@@ -1,0 +1,20 @@
+/* Minimal Reveal.js styling for the KG-CPS-PDT PhD lecture.
+   Remove the `css: styles.css` line in the .qmd frontmatter if unused. */
+
+.reveal section img { background: none; border: none; box-shadow: none; }
+
+/* Keep dense synthesis tables readable */
+.reveal section table { font-size: 0.55em; width: 100%; }
+.reveal section table th,
+.reveal section table td { padding: 4px 8px; }
+
+/* Compact callouts so slides don't overflow */
+.reveal section .callout { padding: 0.4em 0.8em; }
+.reveal section .callout .callout-title,
+.reveal section .callout p { font-size: 0.7em; margin: 0.2em 0; }
+
+/* Slightly smaller .smaller blocks */
+.reveal section .smaller { font-size: 0.8em; }
+
+/* Center the section divider slides */
+.reveal .center { text-align: center; }
