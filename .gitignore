@@ -1,3 +1,12 @@
 # Quarto build artifacts (regenerate with `quarto render`)
 /.quarto/
 *_files/
+
+# Generated PDFs (regenerate with quarto render / build)
+*.pdf
+
+# Python / lab artifacts
+__pycache__/
+*.pyc
+lab/.venv/
+lab/cardiac_kg.ttl

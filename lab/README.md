@@ -456,7 +456,7 @@ hist = pd.read_csv("clinical_history.csv")
 for _, r in hist.iterrows():
     p = pt(r.patient_id)
     g.add((p, RDF.type, CARDIO.Patient))
-    g.add((p, CARDIO.hasName, Literal(r.name)))
+    g.add((p, CARDIO.hasName, Literal(r["name"])))
     g.add((p, CARDIO.hasAge, Literal(int(r.age), datatype=XSD.integer)))
     g.add((p, CARDIO.hasSex, Literal(r.sex)))
     for code in str(r.diagnoses).split(";"):
@@ -580,14 +580,14 @@ PREFIX snomed: <http://snomed.info/id/>
 SELECT DISTINCT ?patient ?d1 ?d2 WHERE {
   ?patient cardio:hasDiagnosis snomed:49436004 ;
            cardio:takes ?d1 ; cardio:takes ?d2 .
-  ?d1 cardio:interactsWith ?d2 .
+  ?d1 (^cardio:interactsWith|cardio:interactsWith) ?d2 .
   FILTER(?d1 != ?d2 && str(?d1) < str(?d2))
 }
 ```
 
 ### 7.5 Clinical discussion of results
 
-- Patients returned by 7.4 (e.g. `P009` on **Warfarin + Amiodarone**, `P006` on **Digoxin + Amiodarone**) are exactly those flagged in real pharmacovigilance. Because `interactsWith` is `owl:SymmetricProperty`, a reasoner (or `FILTER(?d1 != ?d2)`) yields each pair once — a concrete demonstration of **inference from the schema**.
+- Patients returned by 7.4 (`P007` on **Digoxin + Furosemide**, `P009` on **Amiodarone + Warfarin**, `P014` on **Aspirin + Warfarin**) are exactly those flagged in real pharmacovigilance. `interactsWith` is declared `owl:SymmetricProperty`; since `rdflib` performs no automatic reasoning, the query uses the property path `(^interactsWith|interactsWith)` to match both directions, and `FILTER(str(?d1) < str(?d2))` keeps each pair once — a concrete demonstration of **symmetric inference from the schema**.
 - Cross-check 7.2 + 7.4: an AF patient with tachycardia *and* an interacting pair is a high-priority clinical review target — the seed of the advanced exercise.
 
 ---
@@ -602,7 +602,7 @@ SELECT DISTINCT ?patient ?d1 ?d2 WHERE {
 1. Add `cardio:Sotalol` (a class-III anti-arrhythmic that prolongs QT).
 2. Assert it `interactsWith cardio:Amiodarone` (additive QT risk).
 3. Give it to `Patient/P016`.
-4. Re-run the §7.4 query and confirm the new pair appears.
+4. Query the interactions directly and confirm the new pair appears. (Note: Q4 filters on atrial fibrillation, and P016 is not an AF patient, so use the generic interactions query below rather than Q4.)
 
 **Starter code (complete the TODOs)**
 
@@ -626,7 +626,7 @@ g.add((URIRef(CARDIO["Patient/P016"]), CARDIO.takes, Sotalol))
 
 # verify
 q = """PREFIX cardio: <http://example.org/cardio#>
-       SELECT ?d1 ?d2 WHERE { ?d1 cardio:interactsWith ?d2 . FILTER(?d1!=?d2) }"""
+       SELECT ?d1 ?d2 WHERE { ?d1 (^cardio:interactsWith|cardio:interactsWith) ?d2 . FILTER(?d1!=?d2) }"""
 print(sorted({(str(r.d1).split('#')[-1], str(r.d2).split('#')[-1]) for r in g.query(q)}))
 ```
 
@@ -667,7 +667,7 @@ PREFIX snomed: <http://snomed.info/id/>
 SELECT DISTINCT ?patient WHERE {
   ?patient cardio:hasDiagnosis snomed:49436004 ;
            cardio:takes ?d1 ; cardio:takes ?d2 .
-  ?d1 cardio:interactsWith ?d2 .
+  ?d1 (^cardio:interactsWith|cardio:interactsWith) ?d2 .
   FILTER(?d1 != ?d2 && str(?d1) < str(?d2))
   ?patient cardio:monitoredBy ?s .
   ?s cardio:produced ?obs .
