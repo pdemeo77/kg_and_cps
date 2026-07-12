@@ -161,43 +161,21 @@ We focus on **eight** recent papers (2023--2026).
 
 
 # 2 · CPS-to-KG Integration Pipelines
+
+<!--
 ## *"From a voltage on a wrist to a triple in a graph"*
 
 - The bridge is an **engineered artifact**: ingestion $\rightarrow$ mapping $\rightarrow$ triple materialisation $\rightarrow$ query.
 - Four architectures along one spectrum: **edge vs.\ central, real-time vs.\ batch**.
 
-
 ---
 
 ## The Generic Sensor-to-Triple Pipeline
 
-```{=latex}
-\begin{center}
-\begin{tikzpicture}[
-  >=Stealth,
-  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=2pt, font=\scriptsize, text width=1.8cm, minimum height=9mm}
-]
-\node[box] (a) at (0,0)    {Physical CPS/IoT\\wearables $\cdot$ CGM $\cdot$ EEG};
-\node[box] (b) at (2.1,0)  {Raw data\\CSV / JSON / streams};
-\node[box] (c) at (4.2,0)  {Ontology mapping\\R2RML $\cdot$ SOSA $\cdot$ FHIR};
-\node[box] (d) at (6.3,0)  {RDF Knowledge Graph\\OWL triples};
-\node[box] (e) at (8.4,0)  {Reasoning \& query\\SPARQL $\cdot$ SWRL $\cdot$ ML};
-\node[box] (f) at (10.5,0) {Patient Digital Twin};
-\draw[->,semithick] (a) -- (b);
-\draw[->,semithick] (b) -- (c);
-\draw[->,semithick] (c) -- (d);
-\draw[->,semithick] (d) -- (e);
-\draw[->,semithick] (e) -- (f);
-\end{tikzpicture}
-\end{center}
-```
-
 - Each paper is an **instantiation** of stages B$\rightarrow$D.
 - They differ in *mapping language*, *where materialisation occurs*, and *update frequency*.
 - The key engineering question: **real-time materialisation vs.\ batch re-build?**
-
-
----
+-->
 
 ## Pourvahab et al. (2025): RDF + R2RML
 
@@ -287,36 +265,7 @@ We focus on **eight** recent papers (2023--2026).
 
 ---
 
-## Marfoglia et al. (2026): FHIR-Native Ingestion
 
-```{=latex}
-\begin{center}
-\begin{tikzpicture}[
-  >=Stealth,
-  box/.style={draw, rounded corners, align=center, fill=blue!6, inner sep=2pt, font=\scriptsize, text width=1.9cm, minimum height=9mm}
-]
-\node[box] (dt)   at (0,0)    {EHR + IoT time-stamped streams};
-\node[box] (api)  at (2.2,0)  {FHIR R4 REST API};
-\node[box] (kg)   at (4.4,0)  {Persistent OWL-DL KG\\semantic backbone};
-\node[box] (mimo) at (6.6,0)  {MIMO ontology\\standardises model I/O};
-\node[box] (bind) at (8.8,0)  {Manifest-based binding\\auto model registration};
-\node[box] (pdt)  at (11.0,0) {Multi-AI Patient Digital Twin\\e.g., stroke risk};
-\draw[->,semithick] (dt) -- (api);
-\draw[->,semithick] (api) -- (kg);
-\draw[->,semithick] (kg) -- (mimo);
-\draw[->,semithick] (mimo) -- (bind);
-\draw[->,semithick] (bind) -- (pdt);
-\draw[->,semithick] (kg) to[bend left=35] node[above,fill=white,inner sep=1pt,font=\tiny]{automatic gap detection} (pdt);
-\end{tikzpicture}
-\end{center}
-```
-
-- **FHIR R4 API** $\rightarrow$ persistent OWL-DL KG; **MIMO ontology** standardises AI model I/O.
-- **Gap detection:** the system *knows* what data is needed and flags when it is missing.
-- **Trade-off:** real-time retrieval, but **OWL-DL inference latency** under load is the throttle.
-
-
----
 
 ## Real-Time vs.\ Batch: The Universal Pattern
 
@@ -325,7 +274,6 @@ We focus on **eight** recent papers (2023--2026).
 | Pourvahab 2025 | real-time | batch ML |
 | Chatterjee 2024 | offline/batch | query-time |
 | Gyrard 2024 | near-real-time | semi-batch SPARQL |
-| Marfoglia 2026 | real-time API | on-demand OWL-DL |
 
 - **Universal pattern:** ingestion moves toward real-time; *reasoning stays batch*.
 - The gap between them **is** the clinical-latency bottleneck.
