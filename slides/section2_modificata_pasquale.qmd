@@ -318,13 +318,7 @@ We focus on **eight** recent papers (2023--2026).
 
 ---
 
-## Marfoglia (2026): OWL-DL + MIMO
 
-- **Mechanism:** OWL-DL inference enforces semantic consistency; auto-triggers **gap detection** when sensor coverage is insufficient. MIMO standardises AI model I/O for dynamic composition.
-- **Validation:** benchmarked on **stroke-risk prediction** with real-world time-aware streams.
-- **Gap:** no prospective trial; OWL-DL latency under concurrent load unquantified.
-
----
 
 ## Kramer (2025): Federated SWRL
 
